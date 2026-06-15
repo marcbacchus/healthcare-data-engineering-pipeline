@@ -1,0 +1,26 @@
+# Terraform — never commit secrets or local state
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/terraform.tfvars
+
+# Python
+__pycache__/
+*.pyc
+.env
+.venv/
+
+# Data files (can be large)
+data/raw/
+data/processed/
+*.csv
+*.parquet
+
+# dbt
+dbt/target/
+dbt/logs/
+dbt/.user.yml
+
+# macOS
+.DS_Store

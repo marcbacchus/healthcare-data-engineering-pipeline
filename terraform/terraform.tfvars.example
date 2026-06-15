@@ -1,0 +1,7 @@
+# Copy this file to terraform.tfvars and fill in your real values.
+# terraform.tfvars is gitignored — never commit it.
+
+snowflake_org      = "your-org-here"
+snowflake_account  = "your-account-here"
+snowflake_username = "your-username-here"
+snowflake_password = "your-password-here"
