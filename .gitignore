@@ -24,3 +24,7 @@ dbt/.user.yml
 
 # macOS
 .DS_Store
+
+# Local working notes and project instructions (not portfolio content)
+notes.txt
+CLAUDE.md
