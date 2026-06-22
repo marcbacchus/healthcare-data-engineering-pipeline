@@ -27,6 +27,7 @@ dbt/.user.yml
 
 # Local working notes and project instructions (not portfolio content)
 notes.txt
+notes/*.md
 CLAUDE.md
 
 # Synthea

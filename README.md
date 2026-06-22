@@ -63,8 +63,7 @@ All public or synthetic — no proprietary or PHI data.
 
 | Phase | Focus | Status |
 |---|---|---|
-| 1 | Snowflake Foundation + Terraform | ✅ Week 1 complete — Snowflake provisioned via Terraform |
-| 1 | Raw ingestion — CMS, FAERS, Synthea | 🔄 Week 2 — in progress |
+| 1 | Snowflake Foundation + Terraform + Raw Ingest | ✅ Complete — 554K rows across 4 raw tables |
 | 2 | dbt — staging through marts + CI/CD | Planned |
 | 3 | Azure orchestration + Airflow comparison | Planned |
 | 4 | Databricks + MLflow | Planned |
