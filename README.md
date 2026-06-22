@@ -71,9 +71,13 @@ All public or synthetic — no proprietary or PHI data.
 
 ---
 
-## Phase 1 — Snowflake + Terraform
+## Phase 1 — Snowflake Foundation + Raw Ingest
 
-**What's provisioned via Terraform:**
+### Week 1: Terraform
+
+Everything is provisioned as code — no manual UI clicks.
+
+**What's provisioned via Terraform (`terraform/`):**
 
 - 3 databases: `HEALTHCARE_RAW`, `HEALTHCARE_TRANSFORM`, `HEALTHCARE_REPORTING`
 - 4 schemas: `RAW`, `STAGING`, `MARTS`, `REPORTING`
@@ -87,8 +91,6 @@ This role hierarchy mirrors the minimum-necessary-access pattern used in
 regulated healthcare environments — the same pattern whether the data is
 synthetic or production PHI.
 
-### Running Terraform
-
 ```bash
 cd terraform/
 cp terraform.tfvars.example terraform.tfvars
@@ -97,6 +99,32 @@ cp terraform.tfvars.example terraform.tfvars
 terraform init
 terraform plan
 terraform apply
+```
+
+### Week 2: Raw Ingest Pipeline
+
+Four raw tables loaded into `HEALTHCARE_RAW.RAW` via Python (`ingest/`).
+
+**Design:** every source column stored as `VARCHAR` — no type casting at this
+layer. Type enforcement happens in dbt staging models (Phase 2) via
+`TRY_TO_DATE()` / `NULLIF()`. Three metadata columns on every table:
+`_loaded_at`, `_source_file`, `_row_hash` (MD5 for deduplication).
+
+| Table | Source | Rows |
+|---|---|---|
+| `CMS_OPEN_PAYMENTS` | CMS 2023 General Payments via DKAN API | 100,000 |
+| `FAERS_DEMO` | FDA FAERS Q4 2024 ASCII quarterly release | 410,849 |
+| `SYNTHEA_PATIENTS` | Synthea-generated synthetic patients | 1,161 |
+| `SYNTHEA_CONDITIONS` | Synthea-generated conditions (SNOMED-CT) | 42,639 |
+
+```bash
+cd ingest/
+cp .env.example .env        # fill in Snowflake credentials + CMS dataset ID
+bash setup_synthea.sh       # download Synthea jar, generate 1K patients
+python load_synthea.py
+python load_cms.py
+python load_faers.py
+# run validate.sql in Snowflake to confirm row counts and metadata integrity
 ```
 
 ---
@@ -113,6 +141,11 @@ LOADER / TRANSFORMER / REPORTER enforces a one-way data flow at the
 permission level. dbt (TRANSFORMER) cannot modify raw data. BI tools
 (REPORTER) cannot break anything upstream. This is the medallion-adjacent
 security pattern used at most enterprise Snowflake deployments.
+
+**Why VARCHAR everything in the raw layer?**
+Type enforcement at load time causes hard failures when a source changes
+format. The raw layer absorbs data as-is; dbt staging handles casting with
+graceful fallbacks. Schema drift never breaks the ingest pipeline.
 
 ---
 
