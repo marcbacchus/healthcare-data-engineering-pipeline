@@ -12,7 +12,6 @@ Usage: python load_faers.py
 """
 
 import os
-from datetime import date
 
 import requests
 import pandas as pd
@@ -21,7 +20,7 @@ from snowflake_utils import get_connection, add_metadata, load_to_snowflake
 TABLE = "FAERS_DEMO"
 QUARTER = os.environ.get("FAERS_QUARTER", "2024q4")
 ROW_LIMIT = int(os.environ.get("FAERS_ROW_LIMIT", "10000"))
-BATCH_SIZE = 1000  # openFDA API maximum per request
+BATCH_SIZE = 500  # openFDA unauthenticated limit; add api_key param for 1000
 
 BASE_URL = "https://api.fda.gov/drug/event.json"
 
@@ -95,10 +94,12 @@ def fetch_faers(quarter: str, row_limit: int) -> pd.DataFrame:
 
     while len(rows) < row_limit:
         batch = min(BATCH_SIZE, row_limit - len(rows))
-        # Build URL manually: requests.params url-encodes '+' as '%2B', which breaks
-        # the Lucene range syntax the openFDA API expects ('+' must stay literal).
+        # requests.get() percent-encodes '['/']' as %5B/%5D, which openFDA rejects (403).
+        # PreparedRequest lets us set the final URL directly, bypassing that encoding.
         url = f"{BASE_URL}?search={search}&limit={batch}&skip={skip}"
-        resp = requests.get(url, timeout=30)
+        prepared = requests.Request("GET", url).prepare()
+        prepared.url = url
+        resp = requests.Session().send(prepared, timeout=30)
         resp.raise_for_status()
         results = resp.json().get("results", [])
         if not results:
