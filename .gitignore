@@ -28,3 +28,12 @@ dbt/.user.yml
 # Local working notes and project instructions (not portfolio content)
 notes.txt
 CLAUDE.md
+
+# Synthea
+ingest/synthea-with-dependencies.jar
+ingest/output/
+
+# Downloaded source data
+data/synthea/
+data/faers/
+data/cms/
