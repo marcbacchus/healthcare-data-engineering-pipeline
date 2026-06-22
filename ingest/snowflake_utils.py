@@ -24,7 +24,7 @@ def get_connection():
 def add_metadata(df, source_file: str):
     """Append the three standard raw-layer metadata columns to a DataFrame."""
     df = df.copy()
-    df["_loaded_at"] = datetime.now(timezone.utc).replace(tzinfo=None)
+    df["_loaded_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
     df["_source_file"] = source_file
     # Hash computed over source columns only so re-ingesting the same row produces the same hash
     source_cols = [c for c in df.columns if not c.startswith("_")]

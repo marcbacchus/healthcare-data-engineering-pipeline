@@ -9,6 +9,7 @@ Usage: python load_cms.py
 
 import os
 import sys
+from typing import BinaryIO, cast
 import requests
 import pandas as pd
 from snowflake_utils import get_connection, add_metadata, load_to_snowflake
@@ -64,7 +65,7 @@ def fetch_cms(download_url: str) -> pd.DataFrame:
     resp = requests.get(download_url, stream=True, timeout=300)
     resp.raise_for_status()
     # read_csv with nrows reads only the first N data rows without downloading the full file
-    df = pd.read_csv(resp.raw, nrows=ROW_LIMIT, dtype=str, encoding="latin-1")
+    df = pd.read_csv(cast(BinaryIO, resp.raw), nrows=ROW_LIMIT, dtype=str, encoding="latin-1")
     return df
 
 
