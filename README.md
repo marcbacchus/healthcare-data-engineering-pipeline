@@ -113,7 +113,7 @@ layer. Type enforcement happens in dbt staging models (Phase 2) via
 | Table | Source | Rows |
 |---|---|---|
 | `CMS_OPEN_PAYMENTS` | CMS 2023 General Payments via DKAN API | 100,000 |
-| `FAERS_DEMO` | FDA FAERS Q4 2024 ASCII quarterly release | 410,849 |
+| `FAERS_DEMO` | FDA FAERS Q4 2024 via openFDA REST API | 25,000 |
 | `SYNTHEA_PATIENTS` | Synthea-generated synthetic patients | 1,161 |
 | `SYNTHEA_CONDITIONS` | Synthea-generated conditions (SNOMED-CT) | 42,639 |
 
