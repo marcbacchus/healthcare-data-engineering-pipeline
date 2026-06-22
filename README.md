@@ -63,7 +63,7 @@ All public or synthetic — no proprietary or PHI data.
 
 | Phase | Focus | Status |
 |---|---|---|
-| 1 | Snowflake Foundation + Terraform + Raw Ingest | ✅ Complete — 554K rows across 4 raw tables |
+| 1 | Snowflake Foundation + Terraform + Raw Ingest | ✅ Complete — 170K rows across 4 raw tables |
 | 2 | dbt — staging through marts + CI/CD | Planned |
 | 3 | Azure orchestration + Airflow comparison | Planned |
 | 4 | Databricks + MLflow | Planned |
@@ -113,7 +113,7 @@ layer. Type enforcement happens in dbt staging models (Phase 2) via
 | Table | Source | Rows |
 |---|---|---|
 | `CMS_OPEN_PAYMENTS` | CMS 2023 General Payments via DKAN API | 100,000 |
-| `FAERS_DEMO` | FDA FAERS Q4 2024 via openFDA REST API | 25,000 |
+| `FAERS_DEMO` | FDA FAERS Q4 2024 via openFDA REST API | 26,000 |
 | `SYNTHEA_PATIENTS` | Synthea-generated synthetic patients | 1,161 |
 | `SYNTHEA_CONDITIONS` | Synthea-generated conditions (SNOMED-CT) | 42,639 |
 
@@ -126,6 +126,8 @@ python load_cms.py
 python load_faers.py
 # run validate.sql in Snowflake to confirm row counts and metadata integrity
 ```
+
+**Docs:** [Architecture diagram](docs/architecture.md) · [Data dictionary](docs/data_dictionary.md)
 
 ---
 
