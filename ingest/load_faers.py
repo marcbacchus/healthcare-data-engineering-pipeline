@@ -19,7 +19,7 @@ from snowflake_utils import get_connection, add_metadata, load_to_snowflake
 
 TABLE = "FAERS_DEMO"
 QUARTER = os.environ.get("FAERS_QUARTER", "2024q4")
-ROW_LIMIT = int(os.environ.get("FAERS_ROW_LIMIT", "10000"))
+ROW_LIMIT = int(os.environ.get("FAERS_ROW_LIMIT", "25000"))
 BATCH_SIZE = 500  # openFDA unauthenticated limit; add api_key param for 1000
 
 BASE_URL = "https://api.fda.gov/drug/event.json"
@@ -123,6 +123,8 @@ def main():
 
     conn = get_connection()
     try:
+        conn.cursor().execute(f"TRUNCATE TABLE {TABLE}")
+        print(f"Truncated {TABLE}")
         nrows = load_to_snowflake(conn, df, TABLE)
         print(f"Loaded {nrows:,} rows into {TABLE}")
     finally:
