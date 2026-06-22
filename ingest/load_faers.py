@@ -123,8 +123,6 @@ def main():
 
     conn = get_connection()
     try:
-        conn.cursor().execute(f"TRUNCATE TABLE {TABLE}")
-        print(f"Truncated {TABLE}")
         nrows = load_to_snowflake(conn, df, TABLE)
         print(f"Loaded {nrows:,} rows into {TABLE}")
     finally:

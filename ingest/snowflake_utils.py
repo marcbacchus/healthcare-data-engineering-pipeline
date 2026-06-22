@@ -36,8 +36,14 @@ def add_metadata(df, source_file: str):
     return df
 
 
-def load_to_snowflake(conn, df, table_name: str) -> int:
-    """Bulk-load a DataFrame into a Snowflake raw table via write_pandas (COPY INTO under the hood)."""
+def load_to_snowflake(conn, df, table_name: str, truncate: bool = True) -> int:
+    """Bulk-load a DataFrame into a Snowflake raw table via write_pandas (COPY INTO under the hood).
+
+    truncate=True (default): truncates the table before loading so every run is idempotent.
+    Pass truncate=False only for intentional append scenarios.
+    """
+    if truncate:
+        conn.cursor().execute(f"TRUNCATE TABLE {table_name.upper()}")
     df = df.copy()
     df.columns = [c.upper() for c in df.columns]
     success, _nchunks, nrows, _ = write_pandas(
