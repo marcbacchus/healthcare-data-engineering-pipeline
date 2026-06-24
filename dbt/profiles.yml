@@ -1,0 +1,20 @@
+# All values come from environment variables — no credentials in this file.
+# Local dev: set vars in .env (loaded by shell) and run from the dbt/ directory:
+#   dbt run --profiles-dir .
+# CI: values injected as GitHub Secrets (see .github/workflows/dbt_ci.yml).
+
+healthcare:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account:   "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user:      "{{ env_var('SNOWFLAKE_USER') }}"
+      password:  "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role:      TRANSFORMER
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'COMPUTE_WH') }}"
+      database:  HEALTHCARE_TRANSFORM
+      schema:    staging
+      threads:   4
+      client_session_keep_alive: false
+      query_tag: dbt_healthcare

@@ -1,0 +1,71 @@
+version: 2
+
+models:
+  - name: fct_provider_payments
+    description: >
+      One row per CMS Open Payments record.
+      Grain: individual payment transaction.
+      Source: stg_cms_open_payments (CMS program year 2023).
+    columns:
+      - name: payment_id
+        description: "CMS record_id — unique per payment"
+        tests:
+          - not_null
+          - unique
+      - name: payment_amount_usd
+        description: "Total payment amount in USD"
+        tests:
+          - not_null
+      - name: payment_date
+        tests:
+          - not_null
+      - name: paying_manufacturer
+        tests:
+          - not_null
+
+  - name: fct_adverse_events
+    description: >
+      One row per FDA FAERS adverse event report.
+      Grain: individual report submission (primaryid).
+      Source: stg_faers_demo (Q4 2024).
+    columns:
+      - name: report_id
+        description: "FAERS primaryid — unique per report"
+        tests:
+          - not_null
+          - unique
+      - name: initial_or_followup
+        description: "I=initial report, F=follow-up report"
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['I', 'F']
+                quote: true
+
+  - name: mart_patient_risk
+    description: >
+      One row per Synthea synthetic patient with computed clinical risk features.
+      Grain: patient.
+      Drives cohort selection in Phase 4 (Databricks Feature Store + ML models).
+    columns:
+      - name: patient_id
+        description: "Synthea patient UUID — primary key"
+        tests:
+          - not_null
+          - unique
+      - name: risk_tier
+        description: "Clinical risk stratification: high / medium / low based on comorbidity score"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['high', 'medium', 'low']
+                quote: true
+      - name: comorbidity_score
+        description: "Count of active conditions per patient at time of data generation"
+        tests:
+          - not_null
+      - name: polypharmacy_flag
+        description: "True when comorbidity_score >= 5 (proxy; Phase 4 will use medication count)"
+        tests:
+          - not_null
