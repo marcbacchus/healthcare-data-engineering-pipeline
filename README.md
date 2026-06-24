@@ -72,7 +72,7 @@ All public or synthetic — no proprietary or PHI data.
 
 ## Phase 1 — Snowflake Foundation + Raw Ingest
 
-### Week 1: Terraform
+### Terraform
 
 Everything is provisioned as code — no manual UI clicks.
 
@@ -100,7 +100,7 @@ terraform plan
 terraform apply
 ```
 
-### Week 2: Raw Ingest Pipeline
+### Raw Ingest Pipeline
 
 Four raw tables loaded into `HEALTHCARE_RAW.RAW` via Python (`ingest/`).
 
