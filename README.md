@@ -45,16 +45,15 @@ All public or synthetic — no proprietary or PHI data.
 ```
 ├── terraform/            # Snowflake infra as code (Phase 1)
 ├── ingest/               # Python ingest scripts (Phase 1)
+├── dbt/                  # dbt project — staging → marts (Phase 2)
+├── .github/workflows/    # CI/CD — dbt tests on PR, Terraform plan validation (Phase 2)
 ├── azure/
 │   ├── adf/              # ADF pipeline JSON exports (Phase 3)
-│   └── arm/              # ARM templates for full infra reproducibility
-├── airflow/              # Local Airflow DAG (Docker) — orchestrator comparison
-├── dbt/                  # dbt project — staging → marts (Phase 2)
-├── .github/workflows/    # CI/CD — dbt tests on PR, Terraform plan validation
+│   └── arm/              # ARM templates for full infra reproducibility (Phase 3)
+├── airflow/              # Local Airflow DAG (Docker) — orchestrator comparison (Phase 3)
 ├── notebooks/            # Databricks notebooks (exported HTML, Phase 4)
 ├── agent/                # LangChain RAG agent + Streamlit app (Phase 5)
-├── docs/                 # Architecture diagrams, data dictionary, model cards
-└── data/                 # Sample/raw data (gitignored if large)
+└── docs/                 # Architecture diagrams, data dictionary, model cards
 ```
 
 ---
