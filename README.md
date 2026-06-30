@@ -60,94 +60,16 @@ All public or synthetic — no proprietary or PHI data.
 
 ## Phases
 
-| Phase | Focus | Status |
-|---|---|---|
-| 1 | Snowflake Foundation + Terraform + Raw Ingest | ✅ Complete — 170K rows across 4 raw tables |
-| 2 | dbt — staging through marts + CI/CD | Planned |
-| 3 | Azure orchestration + Airflow comparison | Planned |
-| 4 | Databricks + MLflow | Planned |
-| 5 | RAG agent + Streamlit UI | Planned |
+| Phase | Focus | Status | Details |
+|---|---|---|---|
+| 1 | Snowflake Foundation + Terraform + Raw Ingest | ✅ Complete — 170K rows across 4 raw tables | [terraform/](terraform/) · [ingest/](ingest/) |
+| 2 | dbt — staging through marts + CI/CD | ✅ Complete — 7 models, 22 tests, CI on every PR | [dbt/](dbt/) |
+| 3 | Azure orchestration + Airflow comparison | Planned | [azure/](azure/) · [airflow/](airflow/) |
+| 4 | Databricks + MLflow | Planned | [notebooks/](notebooks/) |
+| 5 | RAG agent + Streamlit UI | Planned | [agent/](agent/) |
 
 ---
 
-## Phase 1 — Snowflake Foundation + Raw Ingest
-
-### Terraform
-
-Everything is provisioned as code — no manual UI clicks.
-
-**What's provisioned via Terraform (`terraform/`):**
-
-- 3 databases: `HEALTHCARE_RAW`, `HEALTHCARE_TRANSFORM`, `HEALTHCARE_REPORTING`
-- 4 schemas: `RAW`, `STAGING`, `MARTS`, `REPORTING`
-- 1 warehouse: `COMPUTE_WH` (X-SMALL, auto-suspend 60s, auto-resume)
-- 3 roles with least-privilege grants:
-  - `LOADER` — writes raw data into `HEALTHCARE_RAW`
-  - `TRANSFORMER` — runs dbt, reads RAW, writes STAGING/MARTS
-  - `REPORTER` — SELECT-only on marts (BI tools, analysts)
-
-This role hierarchy mirrors the minimum-necessary-access pattern used in
-regulated healthcare environments — the same pattern whether the data is
-synthetic or production PHI.
-
-```bash
-cd terraform/
-cp terraform.tfvars.example terraform.tfvars
-# fill in your Snowflake account credentials
-
-terraform init
-terraform plan
-terraform apply
-```
-
-### Raw Ingest Pipeline
-
-Four raw tables loaded into `HEALTHCARE_RAW.RAW` via Python (`ingest/`).
-
-**Design:** every source column stored as `VARCHAR` — no type casting at this
-layer. Type enforcement happens in dbt staging models (Phase 2) via
-`TRY_TO_DATE()` / `NULLIF()`. Three metadata columns on every table:
-`_loaded_at`, `_source_file`, `_row_hash` (MD5 for deduplication).
-
-| Table | Source | Rows |
-|---|---|---|
-| `CMS_OPEN_PAYMENTS` | CMS 2023 General Payments via DKAN API | 100,000 |
-| `FAERS_DEMO` | FDA FAERS Q4 2024 via openFDA REST API | 26,000 |
-| `SYNTHEA_PATIENTS` | Synthea-generated synthetic patients | 1,161 |
-| `SYNTHEA_CONDITIONS` | Synthea-generated conditions (SNOMED-CT) | 42,639 |
-
-```bash
-cd ingest/
-cp .env.example .env        # fill in Snowflake credentials + CMS dataset ID
-bash setup_synthea.sh       # download Synthea jar, generate 1K patients
-python load_synthea.py
-python load_cms.py
-python load_faers.py
-# run validate.sql in Snowflake to confirm row counts and metadata integrity
-```
-
-**Docs:** [Architecture diagram](docs/architecture.md) · [Data dictionary](docs/data_dictionary.md)
-
----
-
-## Key Design Decisions
-
-**Why Terraform instead of UI clicks?**
-The warehouse config lives in git, changes go through PR review, and the
-environment can be torn down and rebuilt reproducibly. Required in any
-serious data platform role.
-
-**Why this role structure?**
-LOADER / TRANSFORMER / REPORTER enforces a one-way data flow at the
-permission level. dbt (TRANSFORMER) cannot modify raw data. BI tools
-(REPORTER) cannot break anything upstream. This is the medallion-adjacent
-security pattern used at most enterprise Snowflake deployments.
-
-**Why VARCHAR everything in the raw layer?**
-Type enforcement at load time causes hard failures when a source changes
-format. The raw layer absorbs data as-is; dbt staging handles casting with
-graceful fallbacks. Schema drift never breaks the ingest pipeline.
-
----
+**Docs:** [Architecture diagram](docs/architecture.md) · [Data dictionary](docs/data_dictionary.md) · [dbt docs](https://marcbacchus.github.io/healthcare-data-engineering-pipeline/) *(live after Phase 2 merge)*
 
 *Built with public data. Architecture mirrors production-grade enterprise patterns.*

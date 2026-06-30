@@ -51,4 +51,61 @@ All ingest runs are **idempotent** — each script truncates before loading so r
 
 ---
 
-*Phase 2 will add: dbt staging → mart layer + GitHub Actions CI/CD*
+---
+
+## Phase 2 — dbt Transformations + CI/CD
+
+```mermaid
+flowchart LR
+    subgraph sources["Data Sources"]
+        cms["CMS Open Payments"]
+        faers["FDA FAERS"]
+        synthea["Synthea"]
+    end
+
+    subgraph raw["Snowflake — HEALTHCARE_RAW.RAW  ·  Phase 1"]
+        t1["CMS_OPEN_PAYMENTS"]
+        t2["FAERS_DEMO"]
+        t3["SYNTHEA_PATIENTS"]
+        t4["SYNTHEA_CONDITIONS"]
+    end
+
+    subgraph dbt_stg["dbt Staging  ·  HEALTHCARE_TRANSFORM.STAGING"]
+        s1["stg_cms_open_payments\n(view)"]
+        s2["stg_faers_demo\n(view)"]
+        s3["stg_synthea_patients\n(view)"]
+        s4["stg_synthea_conditions\n(view)"]
+    end
+
+    subgraph dbt_mart["dbt Marts  ·  HEALTHCARE_TRANSFORM.MARTS"]
+        m1["fct_provider_payments\n(table)"]
+        m2["fct_adverse_events\n(table)"]
+        m3["mart_patient_risk\n(table)"]
+    end
+
+    subgraph cicd["CI/CD  ·  .github/workflows/"]
+        gh["GitHub Actions\ndbt test on every PR\ndbt docs → GitHub Pages"]
+    end
+
+    sources --> raw
+    t1 --> s1
+    t2 --> s2
+    t3 & t4 --> s3 & s4
+    s1 --> m1
+    s2 --> m2
+    s3 & s4 --> m3
+    dbt_stg & dbt_mart -. "22 tests" .-> gh
+```
+
+**dbt model summary:**
+
+| Layer | Models | Materialization | Tests |
+|---|---|---|---|
+| Staging | 4 | View | 6 (not_null, unique, relationships) |
+| Marts | 3 | Table | 16 (not_null, unique, accepted_values) |
+
+**Key mart features for downstream phases:**
+
+- `mart_patient_risk.risk_tier` — high/medium/low stratification, drives Phase 4 ML cohort selection
+- `mart_patient_risk.comorbidity_score` — active condition count, seed feature for Phase 4 Feature Store
+- `mart_patient_risk.polypharmacy_flag` — proxy flag (≥5 active conditions); replaced with medication count in Phase 4
