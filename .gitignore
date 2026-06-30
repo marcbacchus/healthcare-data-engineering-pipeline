@@ -29,6 +29,7 @@ dbt/dbt_packages/
 notes.txt
 notes/*.md
 CLAUDE.md
+CLAUDE*.md
 
 # Synthea
 ingest/synthea-with-dependencies.jar
