@@ -6,6 +6,7 @@ on:
     paths:
       - 'dbt/**'
       - '.github/workflows/dbt_docs.yml'
+  workflow_dispatch:
 
 # Required for the modern OIDC-based Pages deployment (no PAT needed)
 permissions:
