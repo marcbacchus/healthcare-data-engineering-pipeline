@@ -31,6 +31,9 @@ notes/*.md
 CLAUDE.md
 CLAUDE*.md
 
+# RAG agent
+agent/chroma_db/
+
 # Synthea
 ingest/synthea-with-dependencies.jar
 ingest/output/
