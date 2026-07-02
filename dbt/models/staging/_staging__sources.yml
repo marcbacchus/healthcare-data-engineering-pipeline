@@ -1,0 +1,23 @@
+version: 2
+
+sources:
+  - name: raw
+    database: HEALTHCARE_RAW
+    schema: RAW
+    description: "Raw landing zone — all columns VARCHAR, metadata cols added by ingest scripts"
+    tables:
+      - name: cms_open_payments
+        identifier: CMS_OPEN_PAYMENTS
+        description: "CMS Open Payments: pharma/device manufacturer payments to physicians (program year 2023)"
+
+      - name: faers_demo
+        identifier: FAERS_DEMO
+        description: "FDA FAERS Demographics: one row per adverse event report submission (Q4 2024)"
+
+      - name: synthea_patients
+        identifier: SYNTHEA_PATIENTS
+        description: "Synthea synthetic patient demographics — 1,000 patients generated locally"
+
+      - name: synthea_conditions
+        identifier: SYNTHEA_CONDITIONS
+        description: "Synthea synthetic patient diagnoses — SNOMED-CT coded, one row per diagnosis episode"

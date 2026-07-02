@@ -4,9 +4,9 @@ from datetime import datetime, timezone
 
 import snowflake.connector
 from snowflake.connector.pandas_tools import write_pandas
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
-load_dotenv()
+load_dotenv(find_dotenv())
 
 
 def get_connection():

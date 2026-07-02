@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: stg_cms_open_payments
+    description: "Typed and renamed CMS Open Payments — one row per payment record"
+    columns:
+      - name: record_id
+        description: "CMS-assigned record identifier (primary key in source)"
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_faers_demo
+    description: "Typed and renamed FAERS demographics — one row per adverse event report"
+    columns:
+      - name: report_id
+        description: "FAERS primaryid — unique per report submission"
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_synthea_patients
+    description: "Typed and renamed Synthea patient demographics — one row per synthetic patient"
+    columns:
+      - name: patient_id
+        description: "Synthea-generated UUID (primary key across all Synthea tables)"
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_synthea_conditions
+    description: "Typed and renamed Synthea conditions — one row per diagnosis episode"
+    columns:
+      - name: patient_id
+        description: "FK to stg_synthea_patients.patient_id"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_synthea_patients')
+                field: patient_id
