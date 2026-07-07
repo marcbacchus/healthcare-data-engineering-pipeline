@@ -1,0 +1,307 @@
+WARNING: Export template operation completed with errors. Some resources were not exported. Please see details for more information.
+ERROR: The schema of resource type 'Microsoft.DataFactory/factories' is not available. Resources of this type will not be exported to the template.
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "actionGroups_ag_pipeline_failures_name": {
+      "type": "String"
+    },
+    "factories_adf_hlth_pipeline_externalid": {
+      "type": "String"
+    },
+    "metricAlerts_alert_adf_pipeline_failure_name": {
+      "type": "String"
+    },
+    "storageAccounts_sthealthpipeline_name": {
+      "type": "String"
+    },
+    "vaults_kv_health_pipeline_name": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2024-10-01-preview",
+      "location": "Global",
+      "name": "[parameters('actionGroups_ag_pipeline_failures_name')]",
+      "properties": {
+        "armRoleReceivers": [],
+        "automationRunbookReceivers": [],
+        "azureAppPushReceivers": [],
+        "azureFunctionReceivers": [],
+        "emailReceivers": [
+          {
+            "emailAddress": "marc.bacchus@gmail.com",
+            "name": "marc-bacchus",
+            "useCommonAlertSchema": false
+          }
+        ],
+        "enabled": true,
+        "eventHubReceivers": [],
+        "groupShortName": "PipeFail",
+        "itsmReceivers": [],
+        "logicAppReceivers": [],
+        "smsReceivers": [],
+        "voiceReceivers": [],
+        "webhookReceivers": []
+      },
+      "type": "microsoft.insights/actionGroups"
+    },
+    {
+      "apiVersion": "2026-03-01-preview",
+      "location": "eastus",
+      "name": "[parameters('vaults_kv_health_pipeline_name')]",
+      "properties": {
+        "accessPolicies": [],
+        "enableRbacAuthorization": true,
+        "enableSoftDelete": true,
+        "enabledForDeployment": false,
+        "enabledForDiskEncryption": false,
+        "enabledForTemplateDeployment": false,
+        "provisioningState": "Succeeded",
+        "publicNetworkAccess": "Enabled",
+        "sku": {
+          "family": "A",
+          "name": "standard"
+        },
+        "softDeleteRetentionInDays": 90,
+        "tenantId": "0448dae5-261f-4d8b-abbe-0c8d2b6094f1",
+        "vaultUri": "[concat('https://', parameters('vaults_kv_health_pipeline_name'), '.vault.azure.net/')]"
+      },
+      "tags": {
+        "env": "dev",
+        "owner": "marc-bacchus",
+        "phase": "3",
+        "project": "healthcare-pipeline"
+      },
+      "type": "Microsoft.KeyVault/vaults"
+    },
+    {
+      "apiVersion": "2026-04-01",
+      "kind": "StorageV2",
+      "location": "eastus",
+      "name": "[parameters('storageAccounts_sthealthpipeline_name')]",
+      "properties": {
+        "accessTier": "Hot",
+        "allowBlobPublicAccess": false,
+        "allowCrossTenantReplication": false,
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "services": {
+            "blob": {
+              "enabled": true,
+              "keyType": "Account"
+            },
+            "file": {
+              "enabled": true,
+              "keyType": "Account"
+            }
+          }
+        },
+        "isHnsEnabled": true,
+        "minimumTlsVersion": "TLS1_0",
+        "networkAcls": {
+          "bypass": "None",
+          "defaultAction": "Allow",
+          "ipRules": [],
+          "ipv6Rules": [],
+          "virtualNetworkRules": []
+        },
+        "supportsHttpsTrafficOnly": true
+      },
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "tags": {
+        "env": "dev",
+        "owner": "marc-bacchus",
+        "phase": "3",
+        "project": "healthcare-pipeline"
+      },
+      "type": "Microsoft.Storage/storageAccounts"
+    },
+    {
+      "apiVersion": "2024-03-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/actionGroups', parameters('actionGroups_ag_pipeline_failures_name'))]"
+      ],
+      "location": "global",
+      "name": "[parameters('metricAlerts_alert_adf_pipeline_failure_name')]",
+      "properties": {
+        "actions": [
+          {
+            "actionGroupId": "[resourceId('microsoft.insights/actionGroups', parameters('actionGroups_ag_pipeline_failures_name'))]"
+          }
+        ],
+        "criteria": {
+          "allOf": [
+            {
+              "criterionType": "StaticThresholdCriterion",
+              "dimensions": [],
+              "metricName": "PipelineFailedRuns",
+              "name": "cond0",
+              "operator": "GreaterThan",
+              "threshold": 0.0,
+              "timeAggregation": "Count"
+            }
+          ],
+          "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria"
+        },
+        "description": "ADF pipeline failure — healthcare ingest pipeline",
+        "enabled": true,
+        "evaluationFrequency": "PT5M",
+        "scopes": [
+          "[parameters('factories_adf_hlth_pipeline_externalid')]"
+        ],
+        "severity": 2,
+        "windowSize": "PT5M"
+      },
+      "type": "Microsoft.Insights/metricAlerts"
+    },
+    {
+      "apiVersion": "2026-03-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', parameters('vaults_kv_health_pipeline_name'))]"
+      ],
+      "location": "eastus",
+      "name": "[concat(parameters('vaults_kv_health_pipeline_name'), '/snowflake-account')]",
+      "properties": {
+        "attributes": {
+          "enabled": true
+        }
+      },
+      "tags": {
+        "file-encoding": "utf-8"
+      },
+      "type": "Microsoft.KeyVault/vaults/secrets"
+    },
+    {
+      "apiVersion": "2026-03-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', parameters('vaults_kv_health_pipeline_name'))]"
+      ],
+      "location": "eastus",
+      "name": "[concat(parameters('vaults_kv_health_pipeline_name'), '/snowflake-password')]",
+      "properties": {
+        "attributes": {
+          "enabled": true
+        }
+      },
+      "tags": {
+        "file-encoding": "utf-8"
+      },
+      "type": "Microsoft.KeyVault/vaults/secrets"
+    },
+    {
+      "apiVersion": "2026-03-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', parameters('vaults_kv_health_pipeline_name'))]"
+      ],
+      "location": "eastus",
+      "name": "[concat(parameters('vaults_kv_health_pipeline_name'), '/snowflake-user')]",
+      "properties": {
+        "attributes": {
+          "enabled": true
+        }
+      },
+      "tags": {
+        "file-encoding": "utf-8"
+      },
+      "type": "Microsoft.KeyVault/vaults/secrets"
+    },
+    {
+      "apiVersion": "2026-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sthealthpipeline_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_sthealthpipeline_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        },
+        "deleteRetentionPolicy": {
+          "allowPermanentDelete": false,
+          "enabled": false
+        },
+        "staticWebsite": {
+          "enabled": false
+        }
+      },
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices"
+    },
+    {
+      "apiVersion": "2026-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sthealthpipeline_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_sthealthpipeline_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        },
+        "protocolSettings": {
+          "smb": {}
+        },
+        "shareDeleteRetentionPolicy": {
+          "days": 7,
+          "enabled": true
+        }
+      },
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "type": "Microsoft.Storage/storageAccounts/fileServices"
+    },
+    {
+      "apiVersion": "2026-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sthealthpipeline_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_sthealthpipeline_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        }
+      },
+      "type": "Microsoft.Storage/storageAccounts/queueServices"
+    },
+    {
+      "apiVersion": "2026-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sthealthpipeline_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_sthealthpipeline_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        }
+      },
+      "type": "Microsoft.Storage/storageAccounts/tableServices"
+    },
+    {
+      "apiVersion": "2026-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_sthealthpipeline_name'), 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sthealthpipeline_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_sthealthpipeline_name'), '/default/raw')]",
+      "properties": {
+        "defaultEncryptionScope": "$account-encryption-key",
+        "denyEncryptionScopeOverride": false,
+        "immutableStorageWithVersioning": {
+          "enabled": false
+        },
+        "publicAccess": "None"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers"
+    }
+  ],
+  "variables": {}
+}

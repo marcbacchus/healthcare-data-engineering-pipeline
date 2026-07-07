@@ -66,14 +66,46 @@ az keyvault secret set --vault-name kv-health-pipeline --name snowflake-user    
 az keyvault secret set --vault-name kv-health-pipeline --name snowflake-password --value <value>
 ```
 
+## ADF vs Airflow — Orchestration Tradeoffs
+
+Both pipelines run the same logical steps: resolve CMS URL → copy sources to
+ADLS → Snowflake COPY INTO. The implementation differences reveal when to reach
+for each tool.
+
+| Dimension | ADF | Airflow (local Docker) |
+|---|---|---|
+| **Setup** | Managed service — no infra to run | Self-hosted: you run scheduler, workers, metadata DB |
+| **Authoring** | GUI + JSON export | Python code (DAG-as-code), version-controlled natively |
+| **Auth to Azure** | Managed identity — zero secrets | Account key or service principal in config |
+| **Dynamic logic** | Web activity + expressions (limited) | Full Python — any logic, any library |
+| **Ops burden** | Zero — Microsoft runs it | You own uptime, upgrades, scaling |
+| **Cost model** | Pay per activity run | Fixed infra cost (or k8s overhead) |
+| **Observability** | Azure Monitor, built-in pipeline runs UI | Airflow UI + your own alerting stack |
+| **Portability** | Azure-only | Runs anywhere Docker runs |
+| **Best for** | Azure-native orgs, non-engineer pipeline builders, compliance-heavy environments where managed services reduce attack surface | Code-first data teams, complex DAG logic, multi-cloud, teams that want full control over the scheduler |
+
+**When to reach for ADF:** Your org is Azure-committed, the pipeline is
+straightforward (copy + transform), and you want managed auth, built-in
+monitoring, and zero scheduler ops. Common in regulated healthcare/finance.
+
+**When to reach for Airflow:** Your team writes Python, the DAG logic is
+complex (branching, dynamic task generation, custom operators), or you need
+portability across clouds. Common in data-engineering-first orgs.
+
+**The honest answer for this project:** ADF is the right production choice here
+— Azure-native, managed identity, no infra overhead. Airflow is included to
+demonstrate orchestrator-agnostic design thinking, not because it's better.
+
+---
+
 ## Phase 3 Checklist
 
 - [x] Resource group + tags
 - [x] ADLS Gen2 storage account (`raw` container, hierarchical namespace)
 - [x] Key Vault with Snowflake credentials (RBAC-based, managed identity)
-- [ ] Data Factory instance + managed identity
-- [ ] ADF pipeline: HTTP → ADLS → Snowflake external stage → COPY INTO
-- [ ] Scheduled trigger (daily) + Azure Monitor failure alert
-- [ ] Airflow DAG (local Docker) — same logical pipeline for comparison
-- [ ] ADF vs Airflow tradeoff writeup
-- [ ] ARM template export
+- [x] Data Factory instance + managed identity
+- [x] ADF pipeline: HTTP → ADLS → Snowflake external stage → COPY INTO
+- [x] Scheduled trigger (daily) + Azure Monitor failure alert
+- [x] Airflow DAG (local Docker) — same logical pipeline for comparison
+- [x] ADF vs Airflow tradeoff writeup
+- [x] ARM template export
