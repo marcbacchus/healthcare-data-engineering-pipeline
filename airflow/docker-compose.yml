@@ -1,0 +1,67 @@
+# Local Airflow setup for Phase 3 orchestration comparison.
+# Uses LocalExecutor + PostgreSQL — lightweight, no Celery workers needed for local dev.
+# Mirrors the ADF pipeline (CMS + FAERS ingest → ADLS → Snowflake COPY INTO)
+# to demonstrate orchestrator-agnostic pipeline design.
+
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.9.3
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
+    # Pass through credentials from .env so DAG can connect to Snowflake + ADLS
+    SNOWFLAKE_ACCOUNT: ${SNOWFLAKE_ACCOUNT}
+    SNOWFLAKE_USER: ${SNOWFLAKE_USER}
+    SNOWFLAKE_PASSWORD: ${SNOWFLAKE_PASSWORD}
+    ADLS_ACCOUNT_NAME: sthealthpipeline
+    ADLS_ACCOUNT_KEY: ${ADLS_ACCOUNT_KEY}
+    CMS_DATASET_ID: ${CMS_DATASET_ID}
+    _PIP_ADDITIONAL_REQUIREMENTS: >-
+      snowflake-connector-python==3.12.4
+      requests==2.32.3
+      azure-storage-blob==12.24.0
+      azure-identity==1.21.0
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 5
+
+  airflow-init:
+    <<: *airflow-common
+    command: ["bash", "-c", "airflow db migrate && airflow users create --username admin --password admin --firstname Marc --lastname Bacchus --role Admin --email marc.bacchus@gmail.com"]
+    restart: "no"
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    restart: always

@@ -1,0 +1,6 @@
+apache-airflow-providers-snowflake==5.7.0
+apache-airflow-providers-http==4.13.1
+snowflake-connector-python==3.12.4
+requests==2.32.3
+azure-storage-blob==12.24.0
+azure-identity==1.21.0
