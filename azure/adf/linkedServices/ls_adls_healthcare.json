@@ -1,0 +1,7 @@
+{
+  "type": "AzureBlobFS",
+  "description": "ADLS Gen2 landing zone — managed identity auth, no credentials in config",
+  "typeProperties": {
+    "url": "https://sthealthpipeline.dfs.core.windows.net/"
+  }
+}

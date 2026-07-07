@@ -1,0 +1,9 @@
+{
+  "type": "HttpServer",
+  "description": "Generic HTTP linked service for public API sources (CMS, FAERS)",
+  "typeProperties": {
+    "url": "https://openpaymentsdata.cms.gov",
+    "enableServerCertificateValidation": true,
+    "authenticationType": "Anonymous"
+  }
+}

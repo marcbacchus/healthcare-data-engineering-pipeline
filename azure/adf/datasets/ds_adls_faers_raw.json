@@ -1,0 +1,15 @@
+{
+  "type": "Json",
+  "description": "ADLS Gen2 sink — FAERS raw JSON landing in raw/faers/",
+  "linkedServiceName": {
+    "referenceName": "ls_adls_healthcare",
+    "type": "LinkedServiceReference"
+  },
+  "typeProperties": {
+    "location": {
+      "type": "AzureBlobFSLocation",
+      "fileSystem": "raw",
+      "folderPath": "faers"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "SnowflakeV2",
+  "description": "Snowflake — credentials pulled from Key Vault at runtime via managed identity",
+  "typeProperties": {
+    "accountIdentifier": {
+      "type": "AzureKeyVaultSecret",
+      "store": { "referenceName": "ls_keyvault", "type": "LinkedServiceReference" },
+      "secretName": "snowflake-account"
+    },
+    "user": "MBACCHUS",
+    "database": "HEALTHCARE_RAW",
+    "warehouse": "COMPUTE_WH",
+    "schema": "RAW",
+    "password": {
+      "type": "AzureKeyVaultSecret",
+      "store": { "referenceName": "ls_keyvault", "type": "LinkedServiceReference" },
+      "secretName": "snowflake-password"
+    },
+    "authenticationType": "Basic"
+  }
+}

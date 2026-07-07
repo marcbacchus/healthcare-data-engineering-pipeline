@@ -1,0 +1,7 @@
+{
+  "type": "AzureKeyVault",
+  "description": "Key Vault linked service — ADF managed identity has Key Vault Secrets User role",
+  "typeProperties": {
+    "baseUrl": "https://kv-health-pipeline.vault.azure.net/"
+  }
+}

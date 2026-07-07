@@ -1,0 +1,148 @@
+{
+  "description": "Ingests CMS Open Payments and FDA FAERS into ADLS Gen2 raw landing zone. CMS URL is resolved dynamically from DKAN metastore before each run — handles CMS file refresh without pipeline changes.",
+  "activities": [
+    {
+      "name": "resolve_cms_download_url",
+      "description": "Calls CMS DKAN metastore API to get the current CSV download URL. CMS refreshes this file periodically; resolving at runtime avoids hardcoded stale URLs.",
+      "type": "WebActivity",
+      "dependsOn": [],
+      "typeProperties": {
+        "url": "https://openpaymentsdata.cms.gov/api/1/metastore/schemas/dataset/items/fb3a65aa-c901-4a38-a813-b04b00dfa2a9",
+        "method": "GET"
+      }
+    },
+    {
+      "name": "copy_cms_to_adls",
+      "type": "Copy",
+      "dependsOn": [
+        { "activity": "resolve_cms_download_url", "dependencyConditions": ["Succeeded"] }
+      ],
+      "policy": {
+        "timeout": "0.02:00:00",
+        "retry": 2,
+        "retryIntervalInSeconds": 60
+      },
+      "typeProperties": {
+        "source": {
+          "type": "DelimitedTextSource",
+          "httpRequestTimeout": "00:30:00",
+          "storeSettings": {
+            "type": "HttpReadSettings",
+            "requestMethod": "GET"
+          },
+          "formatSettings": {
+            "type": "DelimitedTextReadSettings"
+          }
+        },
+        "sink": {
+          "type": "DelimitedTextSink",
+          "storeSettings": {
+            "type": "AzureBlobFSWriteSettings"
+          },
+          "formatSettings": {
+            "type": "DelimitedTextWriteSettings",
+            "fileExtension": ".csv"
+          }
+        },
+        "enableStaging": false
+      },
+      "inputs": [
+        {
+          "referenceName": "ds_http_cms",
+          "type": "DatasetReference",
+          "parameters": {
+            "filePath": {
+              "value": "@replace(activity('resolve_cms_download_url').output.distribution[0].downloadURL, 'https://download.cms.gov', '')",
+              "type": "Expression"
+            }
+          }
+        }
+      ],
+      "outputs": [
+        { "referenceName": "ds_adls_cms_raw", "type": "DatasetReference" }
+      ]
+    },
+    {
+      "name": "copy_faers_to_adls",
+      "type": "Copy",
+      "dependsOn": [],
+      "policy": {
+        "timeout": "0.01:00:00",
+        "retry": 2,
+        "retryIntervalInSeconds": 60
+      },
+      "typeProperties": {
+        "source": {
+          "type": "JsonSource",
+          "httpRequestTimeout": "00:05:00",
+          "storeSettings": {
+            "type": "HttpReadSettings",
+            "requestMethod": "GET",
+            "additionalHeaders": "User-Agent: ADF-HealthcarePipeline/1.0"
+          }
+        },
+        "sink": {
+          "type": "JsonSink",
+          "storeSettings": {
+            "type": "AzureBlobFSWriteSettings"
+          }
+        },
+        "enableStaging": false
+      },
+      "inputs": [
+        { "referenceName": "ds_http_faers", "type": "DatasetReference" }
+      ],
+      "outputs": [
+        { "referenceName": "ds_adls_faers_raw", "type": "DatasetReference" }
+      ]
+    },
+    {
+      "name": "snowflake_copy_cms",
+      "type": "Script",
+      "dependsOn": [
+        { "activity": "copy_cms_to_adls", "dependencyConditions": ["Succeeded"] }
+      ],
+      "policy": {
+        "timeout": "0.00:30:00",
+        "retry": 1,
+        "retryIntervalInSeconds": 60
+      },
+      "linkedServiceName": {
+        "referenceName": "ls_snowflake",
+        "type": "LinkedServiceReference"
+      },
+      "typeProperties": {
+        "scripts": [
+          {
+            "type": "Query",
+            "text": "COPY INTO HEALTHCARE_RAW.RAW.CMS_OPEN_PAYMENTS FROM @HEALTHCARE_RAW.RAW.ADLS_STAGE/cms/ FILE_FORMAT = (TYPE = CSV SKIP_HEADER = 1 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') PURGE = FALSE ON_ERROR = CONTINUE;"
+          }
+        ]
+      }
+    },
+    {
+      "name": "snowflake_copy_faers",
+      "type": "Script",
+      "dependsOn": [
+        { "activity": "copy_faers_to_adls", "dependencyConditions": ["Succeeded"] }
+      ],
+      "policy": {
+        "timeout": "0.00:30:00",
+        "retry": 1,
+        "retryIntervalInSeconds": 60
+      },
+      "linkedServiceName": {
+        "referenceName": "ls_snowflake",
+        "type": "LinkedServiceReference"
+      },
+      "typeProperties": {
+        "scripts": [
+          {
+            "type": "Query",
+            "text": "COPY INTO HEALTHCARE_RAW.RAW.FAERS_DEMO FROM @HEALTHCARE_RAW.RAW.ADLS_STAGE/faers/ FILE_FORMAT = (TYPE = JSON) PURGE = FALSE ON_ERROR = CONTINUE;"
+          }
+        ]
+      }
+    }
+  ]
+}

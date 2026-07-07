@@ -1,0 +1,9 @@
+{
+  "type": "HttpServer",
+  "description": "HTTP linked service for CMS bulk file downloads (download.cms.gov). Base URL is fixed; file path is resolved dynamically per run via DKAN metastore lookup.",
+  "typeProperties": {
+    "url": "https://download.cms.gov",
+    "enableServerCertificateValidation": true,
+    "authenticationType": "Anonymous"
+  }
+}
