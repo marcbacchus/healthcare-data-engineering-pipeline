@@ -1,0 +1,14 @@
+{
+  "type": "Json",
+  "description": "FDA FAERS adverse events — openFDA REST API JSON endpoint",
+  "linkedServiceName": {
+    "referenceName": "ls_http_faers",
+    "type": "LinkedServiceReference"
+  },
+  "typeProperties": {
+    "location": {
+      "type": "HttpServerLocation",
+      "relativeUrl": "/drug/event.json?limit=1000"
+    }
+  }
+}

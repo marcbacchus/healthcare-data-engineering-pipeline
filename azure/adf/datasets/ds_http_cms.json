@@ -1,0 +1,23 @@
+{
+  "type": "DelimitedText",
+  "description": "CMS Open Payments bulk CSV — parameterized file path resolved at runtime from DKAN metastore",
+  "linkedServiceName": {
+    "referenceName": "ls_http_cms_download",
+    "type": "LinkedServiceReference"
+  },
+  "parameters": {
+    "filePath": { "type": "String" }
+  },
+  "typeProperties": {
+    "location": {
+      "type": "HttpServerLocation",
+      "relativeUrl": {
+        "value": "@dataset().filePath",
+        "type": "Expression"
+      }
+    },
+    "columnDelimiter": ",",
+    "escapeChar": "\\",
+    "firstRowAsHeader": true
+  }
+}

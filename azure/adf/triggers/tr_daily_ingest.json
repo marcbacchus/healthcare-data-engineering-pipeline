@@ -1,0 +1,20 @@
+{
+  "type": "ScheduleTrigger",
+  "description": "Daily ingest run at 06:00 UTC",
+  "typeProperties": {
+    "recurrence": {
+      "frequency": "Day",
+      "interval": 1,
+      "startTime": "2026-07-07T06:00:00Z",
+      "timeZone": "UTC"
+    }
+  },
+  "pipelines": [
+    {
+      "pipelineReference": {
+        "referenceName": "pl_ingest_healthcare",
+        "type": "PipelineReference"
+      }
+    }
+  ]
+}

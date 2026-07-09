@@ -1,0 +1,18 @@
+{
+  "type": "DelimitedText",
+  "description": "ADLS Gen2 sink — CMS raw CSV landing in raw/cms/",
+  "linkedServiceName": {
+    "referenceName": "ls_adls_healthcare",
+    "type": "LinkedServiceReference"
+  },
+  "typeProperties": {
+    "location": {
+      "type": "AzureBlobFSLocation",
+      "fileSystem": "raw",
+      "folderPath": "cms"
+    },
+    "columnDelimiter": ",",
+    "escapeChar": "\\",
+    "firstRowAsHeader": true
+  }
+}

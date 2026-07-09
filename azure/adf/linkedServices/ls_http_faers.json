@@ -1,0 +1,9 @@
+{
+  "type": "HttpServer",
+  "description": "HTTP linked service for openFDA REST API (api.fda.gov)",
+  "typeProperties": {
+    "url": "https://api.fda.gov",
+    "enableServerCertificateValidation": true,
+    "authenticationType": "Anonymous"
+  }
+}
