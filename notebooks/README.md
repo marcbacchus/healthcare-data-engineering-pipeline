@@ -67,6 +67,13 @@ imported directly into any Databricks workspace.
 after each restart, then run `dbutils.library.restartPython()` before executing
 notebook cells.
 
+> **Better practice in production:** Pin libraries in the cluster definition
+> (Cluster → Edit → Libraries tab) so they install automatically on every start —
+> no manual reinstall, no risk of version drift between sessions. We used
+> per-session installs here to keep the cluster configuration lightweight during
+> an iterative build where library choices were still evolving. In a stable
+> production cluster, all dependencies would be declared in the cluster spec.
+
 ---
 
 ## Key Design Decisions
