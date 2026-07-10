@@ -7,14 +7,43 @@ imported directly into any Databricks workspace.
 
 ---
 
+## What Was Built
+
+### Feature Engineering
+- Connected Databricks to Snowflake using the TRANSFORMER role (least privilege)
+- Read `mart_patient_risk` from the governed dbt mart layer — same data the business uses, eliminating training/serving skew at the source
+- Engineered 8 features; 7 passed through from the dbt mart, 1 (`expense_to_income_ratio`) derived in Databricks as a model-specific transformation
+- Registered feature table in Databricks Feature Store (Unity Catalog) with `patient_id` as primary key
+
+### Models
+
+**Readmission Risk (XGBoost)**
+- Training set built via `fe.create_training_set()` + `FeatureLookup` — Feature Store pattern, not a raw table read
+- Synthetic proxy label (Synthea has no real readmission outcomes) — documented honestly in model card
+- Dual-threshold logging: 0.35 (high sensitivity, minimize missed high-risk patients) and 0.50 (balanced)
+- AUC 0.512 expected on synthetic label — architecture is production-ready, label is a learning stand-in
+- Deployed to **Databricks Model Serving** (serverless, scale-to-zero) — live REST endpoint returning binary predictions
+
+**Provider Payment Anomaly (IsolationForest)**
+- Unsupervised anomaly detection on 100K CMS Open Payments records
+- 4,994 anomalies flagged at 5% contamination — top flag: $191K single-provider payment
+- Logged to MLflow with sklearn signature; registered in Unity Catalog
+
+**Adverse Event Severity (Random Forest) — dropped**
+- FAERS demographic fields entirely null; insufficient signal for classification
+- Documented in model card with path to revival (FAERS OUTC outcome file)
+- Roadmap explicitly planned this as the first trim if needed
+
+---
+
 ## Notebooks
 
-| Notebook | Phase | Purpose |
-|----------|-------|---------|
-| `phase4_feature_engineering.py` | 4 | Reads `mart_patient_risk` from Snowflake, engineers 8 features, writes to Databricks Feature Store (Unity Catalog) |
-| `phase4_mlflow_training.py` | 4 | Builds Feature Store training set, trains XGBoost readmission risk model, logs to MLflow with dual-threshold evaluation |
-| `phase4_models_2_3.py` | 4 | IsolationForest payment anomaly detection on 100K CMS records; documents dropped adverse event severity model |
-| `phase4_model_serving.py` | 4 | Re-logs model with explicit signature for serving, tests live Databricks Model Serving REST endpoint |
+| Notebook | Purpose |
+|----------|---------|
+| `phase4_feature_engineering.py` | Reads `mart_patient_risk` from Snowflake, engineers 8 features, writes to Databricks Feature Store (Unity Catalog) |
+| `phase4_mlflow_training.py` | Builds Feature Store training set, trains XGBoost readmission risk model, logs to MLflow with dual-threshold evaluation |
+| `phase4_models_2_3.py` | IsolationForest payment anomaly detection on 100K CMS records; documents dropped adverse event severity model |
+| `phase4_model_serving.py` | Re-logs model with explicit signature for serving, tests live Databricks Model Serving REST endpoint |
 
 ---
 
