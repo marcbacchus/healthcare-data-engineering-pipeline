@@ -51,7 +51,7 @@ All public or synthetic — no proprietary or PHI data.
 │   ├── adf/              # ADF pipeline JSON exports (Phase 3)
 │   └── arm/              # ARM templates for full infra reproducibility (Phase 3)
 ├── airflow/              # Local Airflow DAG (Docker) — orchestrator comparison (Phase 3)
-├── notebooks/            # Databricks notebooks (exported HTML, Phase 4)
+├── notebooks/            # Databricks notebooks — Python source format (Phase 4)
 ├── agent/                # LangChain RAG agent + Streamlit app (Phase 5)
 └── docs/                 # Architecture diagrams, data dictionary, model cards
 ```
@@ -68,6 +68,45 @@ All public or synthetic — no proprietary or PHI data.
 | 3.5 | Apache Iceberg exploration | ✅ Complete — local table, schema evolution, time travel, documented POV | [iceberg/](iceberg/) · [docs/iceberg_notes.md](docs/iceberg_notes.md) |
 | 4 | Databricks + MLflow | ✅ Complete — Feature Store (8 features), 2 MLflow models, live REST endpoint | [notebooks/](notebooks/) · [docs/model_cards.md](docs/model_cards.md) |
 | 5 | RAG agent + Streamlit UI | Planned | [agent/](agent/) |
+
+---
+
+## Phase 4 Detail: Databricks + MLflow
+
+### Feature Engineering
+- Connected Databricks to Snowflake using the TRANSFORMER role (least privilege)
+- Read `mart_patient_risk` from the governed dbt mart layer — same data the business uses, eliminating training/serving skew at the source
+- Engineered 8 features; 7 passed through from the dbt mart, 1 (`expense_to_income_ratio`) derived in Databricks as a model-specific transformation
+- Registered feature table in Databricks Feature Store (Unity Catalog) with `patient_id` as primary key
+
+### Models
+
+**Readmission Risk (XGBoost)**
+- Training set built via `fe.create_training_set()` + `FeatureLookup` — feature store pattern, not a raw table read
+- Synthetic proxy label (Synthea has no real readmission outcomes) — documented honestly in model card
+- Dual-threshold logging: 0.35 (high sensitivity, minimize missed high-risk patients) and 0.50 (balanced)
+- AUC 0.512 expected on synthetic label — architecture is production-ready, label is a learning stand-in
+- Deployed to **Databricks Model Serving** (serverless, scale-to-zero) — live REST endpoint returning binary predictions
+
+**Provider Payment Anomaly (IsolationForest)**
+- Unsupervised anomaly detection on 100K CMS Open Payments records
+- 4,994 anomalies flagged at 5% contamination — top flag: $191K single-provider payment
+- Logged to MLflow with sklearn signature; registered in Unity Catalog
+
+**Adverse Event Severity (Random Forest) — dropped**
+- FAERS demographic fields entirely null; insufficient signal for classification
+- Documented in model card with path to revival (FAERS OUTC outcome file)
+- Roadmap explicitly planned this as the first trim if needed
+
+### Notebooks
+| Notebook | Purpose |
+|----------|---------|
+| [phase4_feature_engineering.py](notebooks/phase4_feature_engineering.py) | Snowflake → Feature Store |
+| [phase4_mlflow_training.py](notebooks/phase4_mlflow_training.py) | XGBoost training + MLflow logging |
+| [phase4_models_2_3.py](notebooks/phase4_models_2_3.py) | IsolationForest payment anomaly |
+| [phase4_model_serving.py](notebooks/phase4_model_serving.py) | Serving endpoint + REST test |
+
+**Model cards:** [docs/model_cards.md](docs/model_cards.md) — intended use, metrics, threshold rationale, limitations, bias considerations for each model.
 
 ---
 
