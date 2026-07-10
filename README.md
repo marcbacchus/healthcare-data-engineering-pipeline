@@ -66,7 +66,7 @@ All public or synthetic — no proprietary or PHI data.
 | 2 | dbt — staging through marts + CI/CD | ✅ Complete — 7 models, 22 tests, CI on every PR | [dbt/](dbt/) |
 | 3 | Azure orchestration + Airflow comparison | ✅ Complete — ADF pipeline, ADLS Gen2, Key Vault, Snowpipe COPY INTO, Airflow DAG, ARM export, tradeoff writeup | [azure/](azure/) · [airflow/](airflow/) |
 | 3.5 | Apache Iceberg exploration | ✅ Complete — local table, schema evolution, time travel, documented POV | [iceberg/](iceberg/) · [docs/iceberg_notes.md](docs/iceberg_notes.md) |
-| 4 | Databricks + MLflow | Planned | [notebooks/](notebooks/) |
+| 4 | Databricks + MLflow | ✅ Complete — Feature Store (8 features), 2 MLflow models, live REST endpoint | [notebooks/](notebooks/) · [docs/model_cards.md](docs/model_cards.md) |
 | 5 | RAG agent + Streamlit UI | Planned | [agent/](agent/) |
 
 ---
