@@ -1,5 +1,19 @@
 # Phase 5 — RAG AI Agent: LangChain, ChromaDB, Streamlit
 
+## Setup
+
+Use a dedicated venv for this folder — the global Python environment on some
+machines has a `starlette`/`fastapi` pin that's too old for Streamlit's actual
+import needs, which crashes it at startup with an unrelated-looking
+`ImportError`.
+
+```bash
+python3 -m venv .venv          # from the repo root
+.venv/bin/pip install -r agent/requirements.txt
+set -a && source .env && set +a
+.venv/bin/streamlit run agent/app.py
+```
+
 ## Minimal RAG slice (working prototype)
 
 A working, eval-tested RAG loop over the `fct_adverse_events` dbt mart:
