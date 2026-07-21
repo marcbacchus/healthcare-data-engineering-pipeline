@@ -30,6 +30,7 @@ notes.txt
 notes/*.md
 CLAUDE.md
 CLAUDE*.md
+interview.md
 
 # RAG agent
 agent/chroma_db/
