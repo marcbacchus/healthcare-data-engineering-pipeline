@@ -38,6 +38,52 @@ from Snowflake + OpenAI embeddings on the RAG tool's first call, same as
 locally — the same "pay a one-time cost on cold start" tradeoff as the
 Databricks endpoint's own scale-to-zero wake.
 
+### Deployment — Azure Container Apps
+
+**Live demo:** https://ca-healthcare-agent.victoriousmeadow-ffdf677d.eastus.azurecontainerapps.io
+
+Deployed to the existing `rg-healthcare-pipeline` resource group (tagged
+`phase=5`, alongside Phase 3's Azure resources — see `azure/README.md`):
+
+| Resource | Name | Notes |
+|---|---|---|
+| Container Apps Environment | `cae-healthcare-pipeline` | Consumption plan |
+| Container App | `ca-healthcare-agent` | min replicas 0, max 1 — true scale-to-zero |
+
+**Registry: Docker Hub, not Azure Container Registry.** ACR has no free tier —
+even the cheapest SKU bills continuously regardless of traffic, which defeats
+the point of scale-to-zero everywhere else in this deployment. The image has
+no secrets baked into it (`.dockerignore` excludes `.env`), so a public Docker
+Hub repo costs nothing and carries no real exposure:
+`docker.io/mbacchus/healthcare-agent`.
+
+**Secrets** (Snowflake password, OpenAI/Anthropic API keys, Databricks token)
+are ACA `--secrets`, referenced by env vars via `secretref:` — never passed
+as plain `--env-vars` and never in the image. Non-sensitive identifiers
+(account, user, warehouse, host) are plain env vars.
+
+**Platform gotcha:** the image must be built for `linux/amd64` — building on
+Apple Silicon with a plain `docker build` produces an arm64 image, which ACA
+rejects outright (`no child with platform linux/amd64 in index`). Use
+`docker buildx build --platform linux/amd64 --push` instead:
+
+```bash
+docker buildx build --platform linux/amd64 -f agent/Dockerfile \
+  -t mbacchus/healthcare-agent:latest --push .
+```
+
+Redeploy after a new push with:
+```bash
+az containerapp update --name ca-healthcare-agent \
+  --resource-group rg-healthcare-pipeline \
+  --image docker.io/mbacchus/healthcare-agent:latest
+```
+
+Verified with the same Playwright approach used for local/Docker testing,
+against the live public URL: page loads, a real question gets a real answer
+(SQL + result confirmed present in the rendered page text), zero console
+errors.
+
 ## Minimal RAG slice (working prototype)
 
 A working, eval-tested RAG loop over the `fct_adverse_events` dbt mart:

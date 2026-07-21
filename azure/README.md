@@ -9,14 +9,20 @@ credentials and Azure Monitor alerting.
 ## Azure Resources
 
 All resources in resource group `rg-healthcare-pipeline` (East US), tagged:
-`project=healthcare-pipeline`, `phase=3`, `env=dev`, `owner=marc-bacchus`.
+`project=healthcare-pipeline`, `env=dev`, `owner=marc-bacchus`, and a
+per-resource `phase` tag (this resource group now holds both Phase 3 and
+Phase 5 infra — see below).
 
 | Resource | Name | Purpose |
 |---|---|---|
-| Resource Group | `rg-healthcare-pipeline` | Logical container for all Phase 3 infra |
+| Resource Group | `rg-healthcare-pipeline` | Logical container for all infra across phases |
 | ADLS Gen2 | `sthealthpipeline` | Raw landing zone — files land here before Snowflake load |
 | Key Vault | `kv-health-pipeline` | Snowflake credentials as secrets, RBAC-based managed identity access |
 | Data Factory | `adf-healthcare-pipeline` | *(Week 7)* Orchestrates HTTP → ADLS → Snowflake pipeline |
+
+**Phase 5 addition:** `cae-healthcare-pipeline` (Container Apps Environment)
+and `ca-healthcare-agent` (the deployed RAG agent, scale-to-zero) also live
+in this resource group, tagged `phase=5`. Full detail in `agent/README.md`.
 
 ## Design Decisions
 
