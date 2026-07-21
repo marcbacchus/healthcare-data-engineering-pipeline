@@ -8,3 +8,5 @@ langchain-anthropic==1.4.8
 chromadb==0.6.3
 langchain-chroma==0.2.4
 sqlglot==26.0.1
+requests==2.32.3
+pydantic==2.10.5

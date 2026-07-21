@@ -23,7 +23,7 @@ fields aren't loaded yet. Full writeup in `notes/phase5.md`.
 
 Three tools wired into a LangChain ReAct agent:
 1. **Snowflake text-to-SQL** — `sql_tool.py`. Done.
-2. Databricks readmission risk endpoint (Phase 4 live model)
+2. **Databricks readmission risk endpoint** — `databricks_tool.py`. Done.
 3. RAG over clinical reference PDFs — extends the slice above
 
 Plus a Streamlit UI, Docker packaging, deployment to Azure Container Apps
@@ -49,3 +49,28 @@ known weak point on aggregate/statistical questions.
   rather than trusted from the LLM.
 
 Run: `python agent/sql_tool.py "which quarter had the most adverse event reports?"`
+
+### Tool 2: Databricks readmission risk endpoint (`databricks_tool.py`)
+
+Takes a natural-language patient description, extracts the model's 8 input
+features via structured LLM output (`with_structured_output`, not free-text
+parsing), and calls the live `readmission_risk_model` endpoint from Phase 4
+(`docs/model_cards.md`, Model 1).
+
+**Refuses rather than guesses:** if the description under-specifies the
+patient, the tool lists exactly which required fields are missing instead of
+substituting a default risk factor — consistent with the model card's "not
+intended for autonomous clinical decision-making" framing. Every response,
+regardless of prediction, carries a mandatory disclaimer (synthetic training
+data, AUC ~0.51/near-chance, not a diagnosis, requires clinician review).
+
+`expense_to_income_ratio` is computed here with the exact training-time
+formula rather than left to the LLM to calculate.
+
+**Auth note:** Databricks personal access tokens are scoped. Calling this
+endpoint requires a token with the `model-serving` API scope specifically —
+the workspace's token UI returns a generic 403 for insufficient scope, but
+the response body names the missing scope exactly
+(`"does not have required scopes: model-serving"`).
+
+Run: `python agent/databricks_tool.py "72-year-old patient with 6 active conditions..."`
