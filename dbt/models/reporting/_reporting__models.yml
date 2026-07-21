@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: rpt_provider_payments
+    description: >
+      REPORTER-facing passthrough of fct_provider_payments, materialized in
+      HEALTHCARE_REPORTING. Backs the Phase 5 text-to-SQL agent tool.
+
+  - name: rpt_adverse_events
+    description: >
+      REPORTER-facing passthrough of fct_adverse_events, materialized in
+      HEALTHCARE_REPORTING. Backs the Phase 5 text-to-SQL agent tool.
+
+  - name: rpt_patient_risk
+    description: >
+      REPORTER-facing passthrough of mart_patient_risk, materialized in
+      HEALTHCARE_REPORTING. Backs the Phase 5 text-to-SQL agent tool.

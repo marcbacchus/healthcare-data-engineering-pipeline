@@ -134,6 +134,25 @@ resource "snowflake_grant_privileges_to_account_role" "transformer_marts_schema"
   }
 }
 
+# --- TRANSFORMER: write REPORTING (thin passthrough views dbt maintains for REPORTER) ---
+
+resource "snowflake_grant_privileges_to_account_role" "transformer_reporting_db" {
+  account_role_name = snowflake_account_role.transformer.name
+  privileges        = ["USAGE"]
+  on_account_object {
+    object_type = "DATABASE"
+    object_name = snowflake_database.reporting.name
+  }
+}
+
+resource "snowflake_grant_privileges_to_account_role" "transformer_reporting_schema" {
+  account_role_name = snowflake_account_role.transformer.name
+  privileges        = ["USAGE", "CREATE VIEW"]
+  on_schema {
+    schema_name = "${snowflake_database.reporting.name}.${snowflake_schema.reporting.name}"
+  }
+}
+
 # --- REPORTER: read-only on REPORTING layer ---
 
 resource "snowflake_grant_privileges_to_account_role" "reporter_reporting_db" {
@@ -159,6 +178,19 @@ resource "snowflake_grant_privileges_to_account_role" "reporter_future_tables" {
   on_schema_object {
     future {
       object_type_plural = "TABLES"
+      in_schema          = "${snowflake_database.reporting.name}.${snowflake_schema.reporting.name}"
+    }
+  }
+}
+
+# Reporting-layer models are dbt views, not tables — Snowflake tracks future
+# grants on views separately from future grants on tables.
+resource "snowflake_grant_privileges_to_account_role" "reporter_future_views" {
+  account_role_name = snowflake_account_role.reporter.name
+  privileges        = ["SELECT"]
+  on_schema_object {
+    future {
+      object_type_plural = "VIEWS"
       in_schema          = "${snowflake_database.reporting.name}.${snowflake_schema.reporting.name}"
     }
   }

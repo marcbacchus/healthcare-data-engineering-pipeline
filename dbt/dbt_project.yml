@@ -23,3 +23,7 @@ models:
     marts:
       +schema: marts
       +materialized: table
+    reporting:
+      +database: HEALTHCARE_REPORTING
+      +schema: reporting
+      +materialized: view
