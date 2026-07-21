@@ -1,0 +1,14 @@
+# Keep the agent image scoped to what it needs — everything else in this
+# repo (terraform/, dbt/, airflow/, notebooks/, data/) is irrelevant to it
+# and only bloats the build context.
+*
+!agent/
+!agent/**
+
+# Secrets, local state, and regeneratable/cache artifacts within agent/
+# still shouldn't ship in the image even though agent/ itself is allowed.
+.env
+**/.env
+**/__pycache__/
+**/*.pyc
+agent/chroma_db/

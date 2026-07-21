@@ -14,6 +14,30 @@ set -a && source .env && set +a
 .venv/bin/streamlit run agent/app.py
 ```
 
+### Docker
+
+```bash
+docker build -f agent/Dockerfile -t healthcare-agent .   # from the repo root
+
+# Source .env into the shell first, then pass vars by name (-e VAR with no
+# value pulls from the current shell env). Don't use `docker run --env-file
+# .env` directly — Docker's env-file parser doesn't strip quotes the way
+# shell `source` / python-dotenv do, and this .env quotes some values
+# (SNOWFLAKE_ACCOUNT, etc.). A quoted account identifier fails Snowflake's
+# connector validation with a confusing error that looks unrelated to quoting.
+set -a && source .env && set +a
+docker run -d -p 8501:8501 \
+  -e SNOWFLAKE_ACCOUNT -e SNOWFLAKE_USER -e SNOWFLAKE_PASSWORD -e SNOWFLAKE_WAREHOUSE \
+  -e OPENAI_API_KEY -e ANTHROPIC_API_KEY -e DATABRICKS_HOST -e DATABRICKS_TOKEN \
+  healthcare-agent
+```
+
+The image doesn't bake in `agent/chroma_db/` (excluded via `.dockerignore` —
+it's local dev state, not a build artifact). A fresh container rebuilds it
+from Snowflake + OpenAI embeddings on the RAG tool's first call, same as
+locally — the same "pay a one-time cost on cold start" tradeoff as the
+Databricks endpoint's own scale-to-zero wake.
+
 ## Minimal RAG slice (working prototype)
 
 A working, eval-tested RAG loop over the `fct_adverse_events` dbt mart:
