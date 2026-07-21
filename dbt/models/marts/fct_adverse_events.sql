@@ -22,11 +22,13 @@ final as (
         age_unit,
         age_group,
         patient_age_years,
+        patient_sex_raw,
         patient_sex,
         patient_weight_raw,
         weight_unit,
 
         -- reporter
+        reporter_occupation_raw,
         reporter_occupation,
         reporter_country,
         manufacturer_sender,

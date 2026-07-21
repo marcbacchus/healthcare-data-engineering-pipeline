@@ -35,11 +35,48 @@ models:
           - not_null
           - unique
       - name: initial_or_followup
-        description: "I=initial report, F=follow-up report"
+        description: >
+          I=initial report, F=follow-up report. KNOWN LIMITATION: sourced
+          from openFDA's i_f_cod field, which this API endpoint never
+          populates — this column is always NULL for every row in this
+          dataset (see docs/data_dictionary.md). Kept in the schema
+          deliberately rather than dropped, so the limitation is visible
+          in the mart itself, not just in separate documentation.
         tests:
           - accepted_values:
               arguments:
                 values: ['I', 'F']
+                quote: true
+      - name: is_initial_report
+        description: >
+          Derived as (initial_or_followup = 'I'). Always NULL for the same
+          reason initial_or_followup is always NULL — NULL = 'I' evaluates
+          to NULL, not FALSE. Not a bug; downstream consumers (including
+          the Phase 5 SQL and RAG tools) correctly report this as a data
+          limitation rather than guessing when asked about it.
+      - name: patient_sex
+        description: >
+          Recoded from openFDA's numeric patientsex field (1=Male, 2=Female,
+          0=Unknown) — see patient_sex_raw for the original code.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['M', 'F', 'U']
+                quote: true
+      - name: reporter_occupation
+        description: >
+          Recoded from openFDA's numeric primarysource.qualification field —
+          see reporter_occupation_raw for the original code.
+        tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - 'physician'
+                  - 'pharmacist'
+                  - 'other health professional'
+                  - 'lawyer'
+                  - 'consumer or non-health professional'
+                  - 'other'
                 quote: true
 
   - name: mart_patient_risk

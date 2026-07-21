@@ -40,17 +40,12 @@ _QUERY = """
     LIMIT %(limit)s
 """
 
-_SEX_LABELS = {"M": "male", "F": "female"}
-
-# FAERS reporter occupation codes (MedWatch field)
-_OCCUPATION_LABELS = {
-    "1": "physician",
-    "2": "pharmacist",
-    "3": "other health professional",
-    "4": "lawyer",
-    "5": "consumer or non-health professional",
-    "6": "other",
-}
+# patient_sex is already recoded to 'M'/'F'/'U' in stg_faers_demo.sql (dbt-enforced
+# via an accepted_values test) — this is just for natural-language prose, not
+# decoding a business codelist the way it used to (see git history: it used to
+# duplicate an openFDA numeric-code mapping here, incorrectly, since the mart
+# was passing raw codes through unrecoded).
+_SEX_WORDS = {"M": "male", "F": "female"}
 
 
 def _build_text(row: pd.Series) -> str:
@@ -58,15 +53,15 @@ def _build_text(row: pd.Series) -> str:
     parts = []
 
     has_age = pd.notna(row.patient_age_years)
-    has_sex = pd.notna(row.patient_sex) and str(row.patient_sex).strip().upper() in _SEX_LABELS
+    has_sex = row.patient_sex in _SEX_WORDS  # excludes 'U' (unknown) and null
 
     if has_age and has_sex:
-        sex = _SEX_LABELS[str(row.patient_sex).strip().upper()]
+        sex = _SEX_WORDS[row.patient_sex]
         parts.append(f"Adverse event reported for a {int(row.patient_age_years)}-year-old {sex} patient.")
     elif has_age:
         parts.append(f"Adverse event reported for a {int(row.patient_age_years)}-year-old patient.")
     elif has_sex:
-        sex = _SEX_LABELS[str(row.patient_sex).strip().upper()]
+        sex = _SEX_WORDS[row.patient_sex]
         parts.append(f"Adverse event reported for a {sex} patient of unknown age.")
     else:
         parts.append("Adverse event reported for a patient of unknown age and sex.")
@@ -81,11 +76,16 @@ def _build_text(row: pd.Series) -> str:
         parts.append(f"Report submitted from {row.reporter_country}.")
 
     if pd.notna(row.reporter_occupation) and row.reporter_occupation:
-        label = _OCCUPATION_LABELS.get(str(row.reporter_occupation).strip(), "an unknown reporter type")
-        parts.append(f"Reported by a {label}.")
+        parts.append(f"Reported by a {row.reporter_occupation}.")
 
-    report_type = "initial" if row.is_initial_report else "follow-up"
-    parts.append(f"This is a {report_type} report.")
+    # initial_or_followup (and the is_initial_report derived from it) is always
+    # NULL — openFDA's API never populates it (docs/data_dictionary.md). Say so
+    # honestly rather than defaulting bool(None) to a specific, wrong answer.
+    if pd.isna(row.is_initial_report):
+        parts.append("Whether this is an initial or follow-up report is not known.")
+    else:
+        report_type = "initial" if row.is_initial_report else "follow-up"
+        parts.append(f"This is a {report_type} report.")
 
     if pd.notna(row.report_year) and pd.notna(row.report_quarter):
         parts.append(f"Reported in Q{int(row.report_quarter)} {int(row.report_year)}.")
@@ -130,7 +130,7 @@ def fetch_documents(limit: int = 5000) -> list[Document]:
                     "report_year": int(row.report_year) if pd.notna(row.report_year) else None,
                     "report_quarter": int(row.report_quarter) if pd.notna(row.report_quarter) else None,
                     "reporter_country": str(row.reporter_country) if pd.notna(row.reporter_country) else None,
-                    "is_initial_report": bool(row.is_initial_report),
+                    "is_initial_report": bool(row.is_initial_report) if pd.notna(row.is_initial_report) else None,
                 },
             )
         )
@@ -140,7 +140,7 @@ def fetch_documents(limit: int = 5000) -> list[Document]:
 
 
 if __name__ == "__main__":
-    docs = fetch_documents(limit=5)
+    docs = fetch_documents(limit=1)
     print("\nSample documents:\n")
     for doc in docs:
         print(doc.page_content)

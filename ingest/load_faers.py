@@ -98,8 +98,13 @@ def fetch_faers(quarter: str, row_limit: int) -> pd.DataFrame:
         batch = min(BATCH_SIZE, row_limit - len(rows))
         # requests.get() percent-encodes '['/']' as %5B/%5D, which openFDA rejects (403).
         # PreparedRequest lets us set the final URL directly, bypassing that encoding.
+        # Explicit sort is required for stable skip/limit pagination — openFDA
+        # defaults to relevance-score ordering when unset, which isn't stable
+        # across requests for a broad range query (most records tie on score),
+        # and can return the same record on two consecutive pages. Sorting by
+        # a unique field guarantees a deterministic, non-overlapping order.
         key_param = f"&api_key={API_KEY}" if API_KEY else ""
-        url = f"{BASE_URL}?search={search}&limit={batch}&skip={skip}{key_param}"
+        url = f"{BASE_URL}?search={search}&sort=safetyreportid:asc&limit={batch}&skip={skip}{key_param}"
         prepared = requests.Request("GET", url).prepare()
         prepared.url = url
         resp = requests.Session().send(prepared, timeout=30)

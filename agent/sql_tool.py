@@ -60,13 +60,17 @@ Table: rpt_provider_payments  (one row per CMS Open Payments transaction)
   program_year, payment_year, payment_quarter
 
 Table: rpt_adverse_events  (one row per FDA FAERS adverse event report)
-  report_id, case_id, case_version, initial_or_followup ('I' or 'F'),
-  is_initial_report (boolean), report_type, patient_age_raw, age_unit, age_group,
-  patient_age_years, patient_sex ('M' or 'F'), patient_weight_raw, weight_unit,
-  reporter_occupation, reporter_country, manufacturer_sender,
-  manufacturer_report_number, sent_to_manufacturer, event_date, report_date,
-  fda_receive_date, initial_fda_receive_date, manufacturer_receive_date,
-  report_year, report_quarter, occurrence_country
+  report_id, case_id, case_version, initial_or_followup ('I' or 'F' — ALWAYS
+  NULL, openFDA never populates this field), is_initial_report (boolean —
+  also always NULL, same reason), report_type, patient_age_raw, age_unit,
+  age_group, patient_age_years, patient_sex_raw, patient_sex ('M', 'F', or
+  'U' for unknown), patient_weight_raw, weight_unit, reporter_occupation_raw,
+  reporter_occupation ('physician', 'pharmacist', 'other health
+  professional', 'lawyer', 'consumer or non-health professional', or
+  'other'), reporter_country, manufacturer_sender, manufacturer_report_number,
+  sent_to_manufacturer, event_date, report_date, fda_receive_date,
+  initial_fda_receive_date, manufacturer_receive_date, report_year,
+  report_quarter, occurrence_country
 
 Table: rpt_patient_risk  (one row per Synthea synthetic patient)
   patient_id, first_name, last_name, birth_date, death_date,

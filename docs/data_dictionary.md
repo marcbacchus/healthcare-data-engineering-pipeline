@@ -72,7 +72,7 @@ All columns are `VARCHAR` — no type casting at this layer. Type enforcement ha
 | `wt_cod` | Weight unit | **Always NULL** — not exposed by openFDA API |
 | `rept_dt` | Date report was received by sender | Maps to `receiptdate` |
 | `to_mfr` | Report forwarded to manufacturer flag | **Always NULL** — not exposed by openFDA API |
-| `occp_cod` | Reporter occupation (MD, PH=pharmacist, CN=consumer, etc.) | Maps to `primarysource.qualification` |
+| `occp_cod` | Reporter occupation (1=Physician, 2=Pharmacist, 3=Other health professional, 4=Lawyer, 5=Consumer/non-health professional, 6=Other) | Maps to `primarysource.qualification`. Verified against live data 2026-07-21 — the field is numeric, not the MD/PH/CN letter codes this comment previously (incorrectly) described. |
 | `reporter_country` | Country of the primary reporter | Maps to `primarysource.reportercountry` |
 | `occr_country` | Country where event occurred | Maps to `occurcountry` |
 
