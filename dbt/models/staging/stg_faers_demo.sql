@@ -28,13 +28,18 @@ renamed as (
         NULLIF(age_cod, '')                    as age_unit,
         NULLIF(age_grp, '')                    as age_group,
 
-        -- Normalize age to years regardless of reported unit for cross-report analysis
+        -- Normalize age to years regardless of reported unit for cross-report analysis.
+        -- openFDA's patientonsetageunit is numeric (800=Decade, 801=Year,
+        -- 802=Month, 803=Week, 804=Day; docs/data_dictionary.md) — this used
+        -- to check for 'YR'/'DEC'/'MON'/'WK'/'DY' letter codes from the old FDA
+        -- ASCII-file convention, which never matched, silently nulling out
+        -- patient_age_years for every row (~60% of rows have real age data).
         case NULLIF(age_cod, '')
-            when 'YR'  then TRY_TO_NUMBER(NULLIF(age, ''), 8, 2)
-            when 'DEC' then TRY_TO_NUMBER(NULLIF(age, ''), 8, 2) * 10
-            when 'MON' then TRY_TO_NUMBER(NULLIF(age, ''), 8, 2) / 12
-            when 'WK'  then TRY_TO_NUMBER(NULLIF(age, ''), 8, 2) / 52
-            when 'DY'  then TRY_TO_NUMBER(NULLIF(age, ''), 8, 2) / 365
+            when '801' then TRY_TO_NUMBER(NULLIF(age, ''), 8, 2)
+            when '800' then TRY_TO_NUMBER(NULLIF(age, ''), 8, 2) * 10
+            when '802' then TRY_TO_NUMBER(NULLIF(age, ''), 8, 2) / 12
+            when '803' then TRY_TO_NUMBER(NULLIF(age, ''), 8, 2) / 52
+            when '804' then TRY_TO_NUMBER(NULLIF(age, ''), 8, 2) / 365
             else null
         end                                    as patient_age_years,
 
