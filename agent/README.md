@@ -24,10 +24,12 @@ fields aren't loaded yet. Full writeup in `notes/phase5.md`.
 Three tools wired into a LangChain ReAct agent:
 1. **Snowflake text-to-SQL** — `sql_tool.py`. Done.
 2. **Databricks readmission risk endpoint** — `databricks_tool.py`. Done.
-3. RAG over clinical reference PDFs — extends the slice above
+3. **RAG over adverse event reports** — `rag_tool.py` (wraps the minimal slice
+   above as a proper `@tool`). Done.
+4. **Agent wiring** — `react_agent.py`. Done.
 
-Plus a Streamlit UI, Docker packaging, deployment to Azure Container Apps
-(scale-to-zero), and evaluation documented in `docs/evaluation.md`.
+Remaining: a Streamlit UI, Docker packaging, deployment to Azure Container
+Apps (scale-to-zero), and evaluation documented in `docs/evaluation.md`.
 
 ### Tool 1: Snowflake text-to-SQL (`sql_tool.py`)
 
@@ -74,3 +76,31 @@ the response body names the missing scope exactly
 (`"does not have required scopes: model-serving"`).
 
 Run: `python agent/databricks_tool.py "72-year-old patient with 6 active conditions..."`
+
+### Agent wiring (`react_agent.py`)
+
+`langchain.agents.create_agent` (LangGraph-backed) wires all three tools into
+one ReAct-style agent: model calls a tool, sees the result, decides whether to
+call another or answer — up to a few iterations, not a fixed pipeline.
+
+- **Tool selection** is driven by each tool's own docstring (LangChain surfaces
+  these to the model as the tool descriptions); the system prompt adds only the
+  rules that cut across all three — don't call the risk model for aggregate
+  questions, don't paraphrase away a SQL query or a disclaimer.
+- **Source citation:** SQL answers must include the literal query verbatim;
+  RAG answers must cite Report IDs (enforced by `rag_chain.py`'s own prompt).
+- **Disclaimer integrity:** the Databricks tool's disclaimer must be relayed in
+  full, not summarized — verified by testing that the exact disclaimer text
+  survives the agent's response.
+- **Memory:** `InMemorySaver` checkpointer, keyed by a `thread_id` per
+  conversation — confirmed a follow-up like "and which quarter had the fewest?"
+  correctly resolves against the prior turn's subject without restating it.
+
+Tested against: correct single-tool routing for all three tools, a mixed
+question requiring two tools in one turn (correctly answered one part and
+declined the other — payment anomalies aren't exposed via any tool — rather
+than fabricating a number), and an adversarial delete request (declined,
+explained its tools are read-only, suggested the legitimate path).
+
+Run: `python agent/react_agent.py` (interactive) or
+`python agent/react_agent.py "your question"` (single turn)
