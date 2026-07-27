@@ -42,8 +42,8 @@ All public or synthetic — no proprietary or PHI data.
 | Source | Description |
 |---|---|
 | [CMS Open Payments](https://openpaymentsdata.cms.gov/) | Pharma → physician payments (public CSV) |
-| [FDA FAERS](https://www.fda.gov/drugs/questions-and-answers-fdas-adverse-event-reporting-system-faers/faers-public-dashboard) | Adverse event reports |
-| [Synthea](https://synthea.mitre.org/) | Synthetic patient records (generated locally) |
+| [FDA FAERS](https://open.fda.gov/apis/drug/event/) | Adverse event reports (via the openFDA drug/event API — the actual endpoint `ingest/load_faers.py` calls) |
+| [Synthea](https://github.com/synthetichealth/synthea) | Synthetic patient records (generated locally) |
 
 ---
 
