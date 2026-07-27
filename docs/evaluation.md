@@ -2,8 +2,8 @@
 
 10 test questions run against the live agent (`agent/react_agent.py`), scored
 by hand against three criteria. This is intentionally a small, manual eval —
-enough to have an honest, defensible answer to "did you evaluate this" in an
-interview, not a claim of rigorous statistical coverage.
+enough to have an honest, defensible answer to "did you evaluate this,"
+not a claim of rigorous statistical coverage.
 
 ## Methodology
 
