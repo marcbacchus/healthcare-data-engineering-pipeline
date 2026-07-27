@@ -24,7 +24,7 @@ pipeline failures.
 | Model | Source | Key transforms |
 |---|---|---|
 | `stg_cms_open_payments` | `CMS_OPEN_PAYMENTS` | Renames 61-char CMS column names, casts payment amount via `TRY_TO_NUMBER`, date via `TRY_TO_DATE('MM/DD/YYYY')` |
-| `stg_faers_demo` | `FAERS_DEMO` | Normalizes patient age across 5 reporting units (YR/DEC/MON/WK/DY) into a single `patient_age_years` field; casts dates via `TRY_TO_DATE('YYYYMMDD')` |
+| `stg_faers_demo` | `FAERS_DEMO` | Normalizes patient age across 5 reporting units (openFDA's numeric `age_cod`: 800=Decade, 801=Year, 802=Month, 803=Week, 804=Day) into a single `patient_age_years` field; casts dates via `TRY_TO_DATE('YYYYMMDD')` |
 | `stg_synthea_patients` | `SYNTHEA_PATIENTS` | Casts dates and numeric socioeconomic fields |
 | `stg_synthea_conditions` | `SYNTHEA_CONDITIONS` | Derives `is_active` flag (`stop_date IS NULL`), preserves SNOMED-CT codes |
 

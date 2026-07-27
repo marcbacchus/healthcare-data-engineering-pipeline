@@ -63,4 +63,4 @@ Trigger the `healthcare_ingest` DAG manually from the UI or wait for the schedul
 transformation steps, teams that prefer code review over GUI config, or
 multi-cloud / on-prem environments where Azure lock-in is a concern.
 
-Full tradeoff writeup: [azure/adf/README.md](../azure/adf/README.md)
+Full tradeoff writeup: [azure/README.md](../azure/README.md)

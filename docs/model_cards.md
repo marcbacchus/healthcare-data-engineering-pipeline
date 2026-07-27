@@ -96,18 +96,33 @@ Two thresholds are logged to support different operational contexts:
 
 ### Why Dropped
 FAERS demographic data (Q4 2024) was too sparse for classification:
-- `PATIENT_AGE_YEARS`: 26,000/26,000 null
-- `IS_INITIAL_REPORT`: 26,000/26,000 null
-- `AGE_GROUP`: uniform (single value across all records after staging)
-- `INITIAL_OR_FOLLOWUP`: entirely null
+- `IS_INITIAL_REPORT`: entirely null — `i_f_cod` is not exposed by the openFDA
+  API (confirmed structural gap, not a staging bug)
+- `AGE_GROUP`: uniform (single value across all records after staging) —
+  `age_grp` is likewise not exposed by openFDA
+- `INITIAL_OR_FOLLOWUP`: entirely null, same root cause as `IS_INITIAL_REPORT`
 
 No meaningful severity signal was extractable from the available fields.
+
+**Correction (2026-07-27):** this card originally also cited `PATIENT_AGE_YEARS`
+as 26,000/26,000 null. That was true at the time of this decision, but was a
+staging bug, not a real data limitation — the age-unit codelist mapping
+(`age_cod`) assumed the old FDA ASCII-file letter codes, while openFDA's API
+actually encodes it numerically (see `docs/data_dictionary.md`). Fixed in
+commits `716fba5`/`16a3901`; age is null only when the source `age` field
+itself is null (~41%), not entirely. The three fields above remain genuinely
+unusable regardless — they're not exposed by the API at all — so the drop
+decision itself still stands, but age is now a real, populated field that
+wasn't available when this model was scoped. Whether that changes the
+revival calculus hasn't been evaluated; noted here rather than acted on.
 
 ### Path to Revival
 The FAERS OUTC (outcomes) file contains serious/fatal outcome flags that would
 provide a real severity label. Loading and staging the OUTC file would make this
 model viable. Deferred to a future iteration — the dbt staging model and mart
-structure are already in place and would require only additive changes.
+structure are already in place and would require only additive changes. Real
+`patient_age_years` data (see correction above) would also now be available as
+a feature if this model is revisited.
 
 ---
 
