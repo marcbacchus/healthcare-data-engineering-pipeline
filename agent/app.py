@@ -4,10 +4,12 @@ Streamlit UI for the Phase 5 ReAct agent — public-facing demo chat interface.
 Thin by design: all the real logic (tool selection, guardrails, memory) lives
 in react_agent.py. This file's only job is presenting it as a chat window and
 handling the things a public demo needs that a CLI doesn't — a persistent
-disclaimer banner, graceful error display instead of stack traces, and a
-per-browser-session conversation thread.
+disclaimer banner, graceful error display instead of stack traces, a
+per-browser-session conversation thread, and basic session/question logging
+to stdout (captured by Container Apps — `az containerapp logs show`).
 """
 
+import logging
 import sys
 import uuid
 from pathlib import Path
@@ -17,10 +19,17 @@ from react_agent import ask
 
 import streamlit as st
 
+# INFO-level so visitor/question activity shows up in `az containerapp logs
+# show` without needing a Log Analytics workspace — stdout is captured
+# automatically by Container Apps.
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
+logger = logging.getLogger("agent.visitors")
+
 st.set_page_config(page_title="Healthcare AI Data Platform — Agent Demo", page_icon="🏥")
 
 if "thread_id" not in st.session_state:
     st.session_state.thread_id = str(uuid.uuid4())
+    logger.info("new session=%s", st.session_state.thread_id)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -55,6 +64,7 @@ with st.sidebar:
     if st.button("New conversation"):
         st.session_state.thread_id = str(uuid.uuid4())
         st.session_state.messages = []
+        logger.info("new session=%s", st.session_state.thread_id)
         st.rerun()
 
 for message in st.session_state.messages:
@@ -62,6 +72,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 if question := st.chat_input("Ask about provider payments, adverse events, or patient risk..."):
+    logger.info("session=%s question=%r", st.session_state.thread_id, question)
     st.session_state.messages.append({"role": "user", "content": question})
     with st.chat_message("user"):
         st.markdown(question)
