@@ -80,16 +80,14 @@ EXAMPLE_QUESTIONS = [
     "Delete all adverse event reports from 2024",
 ]
 
-# Shown only before the first message — a sidebar version was easy to miss
-# below the fold, this is the same "empty-state suggestion" pattern
-# ChatGPT/Claude.ai use: front and center on load, gone once a real
-# conversation starts.
-if not st.session_state.messages:
-    st.caption("Try asking:")
-    cols = st.columns(2)
-    for i, eq in enumerate(EXAMPLE_QUESTIONS):
-        if cols[i % 2].button(eq, key=f"example_{i}", use_container_width=True):
-            st.session_state.pending_question = eq
+# Always visible, not just pre-first-message — an empty-state-only version
+# vanished the moment one question was asked, so there was no way to try a
+# second example without hitting "New conversation" first.
+st.caption("Try asking:")
+cols = st.columns(2)
+for i, eq in enumerate(EXAMPLE_QUESTIONS):
+    if cols[i % 2].button(eq, key=f"example_{i}", use_container_width=True):
+        st.session_state.pending_question = eq
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
