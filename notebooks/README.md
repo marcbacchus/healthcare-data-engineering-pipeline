@@ -30,8 +30,8 @@ imported directly into any Databricks workspace.
 - Logged to MLflow with sklearn signature; registered in Unity Catalog
 
 **Adverse Event Severity (Random Forest) — dropped**
-- FAERS demographic fields entirely null; insufficient signal for classification
-- Documented in model card with path to revival (FAERS OUTC outcome file)
+- Report-classification fields (`IS_INITIAL_REPORT`, `AGE_GROUP`, `INITIAL_OR_FOLLOWUP`) are always null — confirmed structural openFDA API gaps, not exposed by the endpoint at all — leaving insufficient signal for classification
+- Documented in model card with path to revival (FAERS OUTC outcome file); model card also has a 2026-07-27 correction noting the age field itself was *not* actually null as originally stated — that was a since-fixed staging bug, unrelated to the fields above
 - Roadmap explicitly planned this as the first trim if needed
 
 ---
@@ -93,10 +93,12 @@ logged so downstream teams can choose based on their cost tolerance and
 intervention capacity.
 
 **Why was the adverse event severity model dropped?**
-FAERS demographic fields were entirely null in the loaded dataset. Rather than
-engineer around bad data, the model was dropped and the decision documented.
-Path to revival: load the FAERS OUTC (outcomes) file, which contains
-serious/fatal outcome flags.
+The report-classification fields it needed (`IS_INITIAL_REPORT`, `AGE_GROUP`,
+`INITIAL_OR_FOLLOWUP`) are confirmed always null — genuine openFDA API gaps.
+Rather than engineer around unusable fields, the model was dropped and the
+decision documented (see `docs/model_cards.md`, including a later correction
+on the age field specifically). Path to revival: load the FAERS OUTC
+(outcomes) file, which contains serious/fatal outcome flags.
 
 ---
 

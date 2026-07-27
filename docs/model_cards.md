@@ -113,8 +113,15 @@ commits `716fba5`/`16a3901`; age is null only when the source `age` field
 itself is null (~41%), not entirely. The three fields above remain genuinely
 unusable regardless — they're not exposed by the API at all — so the drop
 decision itself still stands, but age is now a real, populated field that
-wasn't available when this model was scoped. Whether that changes the
-revival calculus hasn't been evaluated; noted here rather than acted on.
+wasn't available when this model was scoped.
+
+**Considered reviving, decided not to (2026-07-27):** age becoming available
+fixes a *feature* gap, not the actual blocker. This model never had a usable
+*label* — "severity" requires the FAERS OUTC (outcomes) file, which was never
+loaded, entirely independent of the age bug. Reviving it means ingesting a
+new source and building a new staging model, not re-running feature
+engineering with corrected data. Deliberately not pursued for now; revisit
+only if there's a specific reason to prioritize it.
 
 ### Path to Revival
 The FAERS OUTC (outcomes) file contains serious/fatal outcome flags that would

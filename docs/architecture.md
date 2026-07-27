@@ -221,7 +221,7 @@ flowchart LR
     subgraph mlflow["MLflow"]
         exp1["Readmission risk\nXGBoost — dual threshold\n0.35 / 0.50"]
         exp3["Payment anomaly\nIsolationForest — unsupervised"]
-        dropped["Adverse event severity\nRandom Forest — DROPPED\n(FAERS fields entirely null)"]
+        dropped["Adverse event severity\nRandom Forest — DROPPED\n(report-classification fields\nnot exposed by openFDA)"]
     end
 
     subgraph serve["Databricks Model Serving"]

@@ -103,7 +103,7 @@ the most reports?") are a weak point for similarity search — that's the gap
 the text-to-SQL tool below closes. FAERS demographic data only; drug/reaction
 fields aren't loaded yet. Full writeup in `notes/phase5.md`.
 
-## Full Phase 5 build (in progress)
+## Full Phase 5 build
 
 Three tools wired into a LangChain ReAct agent:
 1. **Snowflake text-to-SQL** — `sql_tool.py`. Done.
@@ -112,8 +112,9 @@ Three tools wired into a LangChain ReAct agent:
    above as a proper `@tool`). Done.
 4. **Agent wiring** — `react_agent.py`. Done.
 
-Remaining: a Streamlit UI, Docker packaging, deployment to Azure Container
-Apps (scale-to-zero), and evaluation documented in `docs/evaluation.md`.
+Also shipped (see sections above): the Streamlit UI, Docker packaging,
+deployment to Azure Container Apps (scale-to-zero, live at the URL above),
+and a 10-question evaluation documented in `docs/evaluation.md` (8/10).
 
 ### Tool 1: Snowflake text-to-SQL (`sql_tool.py`)
 

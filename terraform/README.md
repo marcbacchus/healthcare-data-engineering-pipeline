@@ -9,7 +9,7 @@ The full environment can be torn down and rebuilt reproducibly from this directo
 |---|---|---|
 | Database | `HEALTHCARE_RAW` | Raw landing zone — all source data loads here |
 | Database | `HEALTHCARE_TRANSFORM` | dbt staging and mart models (Phase 2) |
-| Database | `HEALTHCARE_REPORTING` | Reserved for BI / reporting layer (Phase 5) |
+| Database | `HEALTHCARE_REPORTING` | BI / reporting layer — populated by dbt in Phase 5, backs the RAG agent's text-to-SQL tool |
 | Schema | `RAW` | Inside `HEALTHCARE_RAW` |
 | Schema | `STAGING` | Inside `HEALTHCARE_TRANSFORM` |
 | Schema | `MARTS` | Inside `HEALTHCARE_TRANSFORM` |
