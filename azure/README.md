@@ -18,7 +18,7 @@ Phase 5 infra — see below).
 | Resource Group | `rg-healthcare-pipeline` | Logical container for all infra across phases |
 | ADLS Gen2 | `sthealthpipeline` | Raw landing zone — files land here before Snowflake load |
 | Key Vault | `kv-health-pipeline` | Snowflake credentials as secrets, RBAC-based managed identity access |
-| Data Factory | `adf-healthcare-pipeline` | *(Week 7)* Orchestrates HTTP → ADLS → Snowflake pipeline |
+| Data Factory | `adf-healthcare-pipeline` | Orchestrates HTTP → ADLS → Snowflake pipeline |
 
 **Phase 5 addition:** `cae-healthcare-pipeline` (Container Apps Environment)
 and `ca-healthcare-agent` (the deployed RAG agent, scale-to-zero) also live
@@ -44,7 +44,7 @@ secrets in config files, no rotation incidents.
 ## Setup
 
 Resources are provisioned via `az` CLI. ARM template export for full
-reproducibility: [`arm/`](arm/) *(added at Week 8 completion)*.
+reproducibility: [`arm/`](arm/).
 
 ```bash
 az login
