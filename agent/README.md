@@ -72,12 +72,42 @@ docker buildx build --platform linux/amd64 -f agent/Dockerfile \
   -t mbacchus/healthcare-agent:latest --push .
 ```
 
-Redeploy after a new push with:
+**Redeploy gotcha: `:latest` is a mutable tag, and ACA doesn't know that.**
+A Container Apps revision resolves and pins an image tag to a specific digest
+at the moment it's created — pushing a new image to `:latest` afterward does
+**not** get picked up by an existing revision, even across a scale-to-zero
+cold restart, because `az containerapp update --image ...:latest` sees the
+same image *string* as already configured and skips creating a new revision
+entirely. Confirmed directly: pushed a new image, ran `update --image
+...:latest`, and `az containerapp revision list` still showed the *old*
+revision (from days earlier) as the only one — 0 new revisions created,
+0 code changes actually live.
+
+**Fix: tag with something unique (e.g. the git short SHA) and deploy that
+specific tag**, so the image string always changes and ACA is forced to cut
+a new revision:
+
 ```bash
+TAG=$(git rev-parse --short HEAD)
+docker buildx build --platform linux/amd64 -f agent/Dockerfile \
+  -t mbacchus/healthcare-agent:latest \
+  -t mbacchus/healthcare-agent:$TAG \
+  --push .
+
 az containerapp update --name ca-healthcare-agent \
   --resource-group rg-healthcare-pipeline \
-  --image docker.io/mbacchus/healthcare-agent:latest
+  --image docker.io/mbacchus/healthcare-agent:$TAG
 ```
+
+Confirm it actually worked — don't just trust exit code 0:
+```bash
+az containerapp revision list --name ca-healthcare-agent \
+  --resource-group rg-healthcare-pipeline -o table
+```
+The newest revision should show 100% traffic and a `createdTime` from just
+now, not an old deploy. `az containerapp logs show --tail 30` should also
+show a fresh replica start (new revision name, current timestamp) — if it
+shows an old revision name or a stale timestamp, the update didn't take.
 
 Verified with the same Playwright approach used for local/Docker testing,
 against the live public URL: page loads, a real question gets a real answer
