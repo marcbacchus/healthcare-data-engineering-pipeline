@@ -30,7 +30,6 @@ notes.txt
 notes/*.md
 CLAUDE.md
 CLAUDE*.md
-marc_notes.md
 
 # RAG agent
 agent/chroma_db/
