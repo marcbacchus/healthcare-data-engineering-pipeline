@@ -18,6 +18,8 @@ The full environment can be torn down and rebuilt reproducibly from this directo
 | Role | `LOADER` | Writes raw data into `HEALTHCARE_RAW` |
 | Role | `TRANSFORMER` | Reads RAW, writes STAGING/MARTS |
 | Role | `REPORTER` | SELECT-only on marts |
+| Storage integration | `AZURE_ADLS_INTEGRATION` | Lets Snowflake read directly from ADLS Gen2 (Phase 3) |
+| Stage | `ADLS_STAGE` | External stage in `HEALTHCARE_RAW.RAW`, source for the ADF/Airflow `COPY INTO` pipelines |
 
 ## Role hierarchy
 
@@ -55,4 +57,30 @@ terraform apply
 | `databases.tf` | Database and schema definitions |
 | `warehouses.tf` | Warehouse config (size, auto-suspend, auto-resume) |
 | `roles.tf` | Roles, grants, and role hierarchy |
+| `adls_stage.tf` | Azure storage integration + external stage (imported, see note below) |
 | `outputs.tf` | Output values (account locator, warehouse name) |
+
+## Note: importing pre-existing objects
+
+`adls_stage.tf` was not created by `terraform apply` from scratch — the
+`AZURE_ADLS_INTEGRATION` storage integration and `ADLS_STAGE` external stage
+were originally run ad hoc in a Snowflake worksheet during Phase 3 (2026-07-06),
+before this project's "everything as code" rule was applied consistently.
+
+When that gap was noticed, the objects were reconciled into Terraform state
+rather than recreated:
+
+1. Confirmed the objects were real and found who/when created them via
+   `SELECT query_text, user_name, start_time FROM snowflake.account_usage.query_history WHERE query_text ILIKE '%ADLS_STAGE%'`
+2. Added `import` blocks targeting the resource addresses + Snowflake object IDs
+   (`AZURE_ADLS_INTEGRATION` for the integration; `HEALTHCARE_RAW|RAW|ADLS_STAGE`
+   pipe-delimited for the stage)
+3. Ran `terraform plan -generate-config-out=<file>.tf` to generate HCL from the
+   *live* object properties instead of hand-typing config and risking drift
+4. Reviewed/trimmed the generated config, ran `terraform apply` to complete
+   the import, then deleted the now-consumed `import` blocks
+
+If you ever find another object that exists in Snowflake but not in this
+directory, this is the playbook — `account_usage.query_history` first (to
+confirm it's real and see its origin), then `plan -generate-config-out`
+before hand-writing anything.
