@@ -1,4 +1,4 @@
-# Phase 3 — Azure Orchestration: ADF, ADLS Gen2, Key Vault, Snowpipe
+# Phase 3 — Azure Orchestration: ADF, ADLS Gen2, Key Vault, Snowflake External Stage
 
 Production ingestion pipeline: HTTP source → ADLS Gen2 → Snowflake external
 stage → COPY INTO, orchestrated by Azure Data Factory with Key Vault-managed

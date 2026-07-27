@@ -35,5 +35,7 @@ building on the last. Phases covered:
 
 - Phase 1: Snowflake foundation + raw ingest
 - Phase 2: dbt transformation layer + CI/CD
-- Phase 3: Azure orchestration (ADF + ADLS + Key Vault + Snowpipe)
-- Phase 4: Databricks + MLflow + Model Serving *(diagram pending)*
+- Phase 3: Azure orchestration (ADF + ADLS + Key Vault + Snowflake external stage)
+- Phase 3.5: Apache Iceberg exploration (schema evolution, time travel)
+- Phase 4: Databricks + MLflow + Model Serving
+- Phase 5: RAG agent (LangChain + ChromaDB) + Streamlit UI on Azure Container Apps
