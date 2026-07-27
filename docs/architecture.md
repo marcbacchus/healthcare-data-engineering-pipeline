@@ -94,7 +94,7 @@ flowchart LR
     s1 --> m1
     s2 --> m2
     s3 & s4 --> m3
-    dbt_stg & dbt_mart -. "22 tests" .-> gh
+    dbt_stg & dbt_mart -. "24 tests" .-> gh
 ```
 
 **dbt model summary:**

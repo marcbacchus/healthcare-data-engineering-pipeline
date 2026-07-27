@@ -40,13 +40,13 @@ Materialized as **tables** — pre-computed for query performance. Grain documen
 
 ## Tests
 
-22 data tests across all models, enforced by CI on every PR:
+24 data tests across all models, enforced by CI on every PR:
 
 | Test type | Count | Applied to |
 |---|---|---|
-| `not_null` | 12 | Key columns on all staging + mart models |
-| `unique` | 7 | Primary keys on all staging + mart models |
-| `accepted_values` | 2 | `initial_or_followup` (I/F), `risk_tier` (high/medium/low) |
+| `not_null` | 13 | Key columns on all staging + mart models |
+| `unique` | 6 | Primary keys on all staging + mart models |
+| `accepted_values` | 4 | `initial_or_followup` (I/F), `patient_sex` (M/F/U), `reporter_occupation`, `risk_tier` (high/medium/low) |
 | `relationships` | 1 | `stg_synthea_conditions.patient_id` → `stg_synthea_patients.patient_id` |
 
 ## CI/CD
@@ -65,7 +65,7 @@ source .env
 cd dbt/
 dbt debug --profiles-dir .                                    # verify connection
 dbt run   --profiles-dir .                                    # build all models
-dbt test  --profiles-dir .                                    # run all 22 tests
+dbt test  --profiles-dir .                                    # run all 24 tests
 dbt docs generate --profiles-dir . && dbt docs serve          # browse lineage locally
 ```
 

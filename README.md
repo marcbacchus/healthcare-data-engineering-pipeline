@@ -71,7 +71,7 @@ All public or synthetic — no proprietary or PHI data.
 | Phase | Focus | Status | Details |
 |---|---|---|---|
 | 1 | Snowflake Foundation + Terraform + Raw Ingest | ✅ Complete — 170K rows across 4 raw tables | [terraform/](terraform/) · [ingest/](ingest/) |
-| 2 | dbt — staging through marts + CI/CD | ✅ Complete — 7 models, 22 tests, CI on every PR | [dbt/](dbt/) |
+| 2 | dbt — staging through marts + CI/CD | ✅ Complete — 7 models, 24 tests, CI on every PR | [dbt/](dbt/) |
 | 3 | Azure orchestration + Airflow comparison | ✅ Complete — ADF pipeline, ADLS Gen2, Key Vault, external stage + COPY INTO, Airflow DAG, ARM export, tradeoff writeup | [azure/](azure/) · [airflow/](airflow/) |
 | 3.5 | Apache Iceberg exploration | ✅ Complete — local table, schema evolution, time travel, documented POV | [iceberg/](iceberg/) · [docs/iceberg_notes.md](docs/iceberg_notes.md) |
 | 4 | Databricks + MLflow | ✅ Complete — Feature Store (8 features), 2 MLflow models, live REST endpoint | [notebooks/](notebooks/) · [docs/model_cards.md](docs/model_cards.md) |
