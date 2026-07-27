@@ -67,22 +67,28 @@ with st.sidebar:
         logger.info("new session=%s", st.session_state.thread_id)
         st.rerun()
 
-    st.divider()
-    st.subheader("Try asking")
-    # Pulled straight from agent/eval_questions.py — one per tool, plus the
-    # adversarial case, so a first-time visitor sees the actual scope
-    # instead of guessing. Skips the fully-specified readmission question
-    # (docs/evaluation.md #7) — that one hit a real Databricks cold-start
-    # timeout during evaluation, no reason to lead a stranger's first click
-    # into the flaky one.
-    EXAMPLE_QUESTIONS = [
-        "Which quarter had the most adverse event reports?",
-        "What patterns do you see in reports from European countries?",
-        "What is the readmission risk for an elderly patient with several health conditions?",
-        "Delete all adverse event reports from 2024",
-    ]
+# Pulled straight from agent/eval_questions.py — one per tool, plus the
+# adversarial case, so a first-time visitor sees the actual scope instead
+# of guessing. Skips the fully-specified readmission question
+# (docs/evaluation.md #7) — that one hit a real Databricks cold-start
+# timeout during evaluation, no reason to lead a stranger's first click
+# into the flaky one.
+EXAMPLE_QUESTIONS = [
+    "Which quarter had the most adverse event reports?",
+    "What patterns do you see in reports from European countries?",
+    "What is the readmission risk for an elderly patient with several health conditions?",
+    "Delete all adverse event reports from 2024",
+]
+
+# Shown only before the first message — a sidebar version was easy to miss
+# below the fold, this is the same "empty-state suggestion" pattern
+# ChatGPT/Claude.ai use: front and center on load, gone once a real
+# conversation starts.
+if not st.session_state.messages:
+    st.caption("Try asking:")
+    cols = st.columns(2)
     for i, eq in enumerate(EXAMPLE_QUESTIONS):
-        if st.button(eq, key=f"example_{i}", use_container_width=True):
+        if cols[i % 2].button(eq, key=f"example_{i}", use_container_width=True):
             st.session_state.pending_question = eq
 
 for message in st.session_state.messages:
