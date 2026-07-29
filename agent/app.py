@@ -50,7 +50,8 @@ with st.sidebar:
         "event reports\n"
         "- **Readmission risk** — calls a live Databricks Model Serving "
         "endpoint for a described patient\n\n"
-        "See `docs/architecture.md` and `docs/model_cards.md` in the repo "
+        "See `docs/architecture.md` and `docs/model_cards.md` in the "
+        "[GitHub repo](https://github.com/marcbacchus/healthcare-data-engineering-pipeline) "
         "for full details."
     )
     st.divider()
